@@ -1,11 +1,13 @@
 //! Inspects JSON structure without showing values, saving tokens on large payloads.
 
-use crate::core::tracking;
-use anyhow::{bail, Context, Result};
-use serde_json::Value;
 use std::fs;
 use std::io::{self, Read};
 use std::path::Path;
+
+use anyhow::{bail, Context, Result};
+use serde_json::Value;
+
+use crate::core::tracking;
 
 /// Reject non-JSON files with a clear error before doing any I/O.
 fn validate_json_extension(file: &Path) -> Result<()> {
@@ -111,7 +113,7 @@ fn compact_json(value: &Value, depth: usize, max_depth: usize) -> String {
             } else {
                 format!("{}\"{}\"", indent, s)
             }
-        }
+        },
         Value::Array(arr) => {
             if arr.is_empty() {
                 format!("{}[]", indent)
@@ -141,7 +143,7 @@ fn compact_json(value: &Value, depth: usize, max_depth: usize) -> String {
                     lines.join("\n")
                 }
             }
-        }
+        },
         Value::Object(map) => {
             if map.is_empty() {
                 format!("{}{{}}", indent)
@@ -173,7 +175,7 @@ fn compact_json(value: &Value, depth: usize, max_depth: usize) -> String {
                 lines.push(format!("{}}}", indent));
                 lines.join("\n")
             }
-        }
+        },
     }
 }
 
@@ -200,7 +202,7 @@ fn extract_schema(value: &Value, depth: usize, max_depth: usize) -> String {
             } else {
                 format!("{}float", indent)
             }
-        }
+        },
         Value::String(s) => {
             if s.len() > 50 {
                 format!("{}string[{}]", indent, s.len())
@@ -216,7 +218,7 @@ fn extract_schema(value: &Value, depth: usize, max_depth: usize) -> String {
                     format!("{}string", indent)
                 }
             }
-        }
+        },
         Value::Array(arr) => {
             if arr.is_empty() {
                 format!("{}[]", indent)
@@ -229,7 +231,7 @@ fn extract_schema(value: &Value, depth: usize, max_depth: usize) -> String {
                     format!("{}[{}] ({})", indent, trimmed, arr.len())
                 }
             }
-        }
+        },
         Value::Object(map) => {
             if map.is_empty() {
                 format!("{}{{}}", indent)
@@ -269,7 +271,7 @@ fn extract_schema(value: &Value, depth: usize, max_depth: usize) -> String {
                 lines.push(format!("{}}}", indent));
                 lines.join("\n")
             }
-        }
+        },
     }
 }
 

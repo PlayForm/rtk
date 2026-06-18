@@ -6,10 +6,11 @@
 //! Token optimization: automatically excludes noise directories via -I pattern
 //! unless -a flag is present (respecting user intent).
 
+use anyhow::Result;
+
 use super::constants::NOISE_DIRS;
 use crate::core::runner::{self, RunOptions};
 use crate::core::utils::{resolved_command, tool_exists};
-use anyhow::Result;
 
 pub fn run(args: &[String], verbose: u8) -> Result<i32> {
     if !tool_exists("tree") {

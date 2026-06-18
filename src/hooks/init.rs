@@ -1,16 +1,12 @@
 //! Sets up RTK hooks so AI coding agents automatically route commands through RTK.
 
-use anyhow::{Context, Result};
 use std::ffi::OsString;
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use tempfile::NamedTempFile;
 
-use crate::hooks::constants::{
-    CONFIG_DIR, COPILOT_HOME_ENV, COPILOT_HOOK_FILE, COPILOT_INSTRUCTIONS_FILE, COPILOT_USER_DIR,
-    CURSOR_DIR, GEMINI_DIR, GITHUB_DIR, OPENCODE_PLUGIN_FILE, OPENCODE_SUBDIR, PLUGIN_SUBDIR,
-};
+use anyhow::{Context, Result};
+use tempfile::NamedTempFile;
 
 use super::constants::{
     BEFORE_TOOL_KEY, CLAUDE_DIR, CLAUDE_HOOK_COMMAND, CODEX_DIR, CURSOR_HOOK_COMMAND,
@@ -20,6 +16,10 @@ use super::constants::{
     PRE_TOOL_USE_KEY, REWRITE_HOOK_FILE, SETTINGS_JSON,
 };
 use super::integrity;
+use crate::hooks::constants::{
+    CONFIG_DIR, COPILOT_HOME_ENV, COPILOT_HOOK_FILE, COPILOT_INSTRUCTIONS_FILE, COPILOT_USER_DIR,
+    CURSOR_DIR, GEMINI_DIR, GITHUB_DIR, OPENCODE_PLUGIN_FILE, OPENCODE_SUBDIR, PLUGIN_SUBDIR,
+};
 
 // Embedded OpenCode plugin (auto-rewrite)
 const OPENCODE_PLUGIN: &str = include_str!("../../hooks/opencode/rtk.ts");
@@ -305,17 +305,17 @@ pub fn run(
                 (true, opencode, true, _) => run_claude_md_mode(global, opencode, ctx)?,
                 (true, opencode, false, true) => {
                     run_hook_only_mode(global, patch_mode, opencode, ctx)?
-                }
+                },
                 (true, opencode, false, false) => {
                     run_default_mode(global, patch_mode, opencode, ctx)?
-                }
+                },
                 (false, false, _, _) => {
                     if !install_cursor {
                         anyhow::bail!(
                             "at least one of install_claude or install_opencode must be true"
                         )
                     }
-                }
+                },
             }
 
             // Cursor hooks (additive, installed alongside Claude Code)
@@ -463,7 +463,7 @@ fn prompt_telemetry_consent() -> Result<()> {
     match config.telemetry.consent_given {
         Some(true) => return Ok(()),
         Some(false) => return Ok(()),
-        None => {}
+        None => {},
     }
 
     if !io::stdin().is_terminal() {
@@ -968,7 +968,7 @@ fn patch_settings_json_command(
         PatchMode::Skip => {
             print_manual_instructions(hook_command, include_opencode);
             return Ok(PatchResult::Skipped);
-        }
+        },
         PatchMode::Ask => {
             // Skip the interactive prompt in dry-run: we must not mutate state or block on stdin.
             if dry_run {
@@ -980,10 +980,10 @@ fn patch_settings_json_command(
                 print_manual_instructions(hook_command, include_opencode);
                 return Ok(PatchResult::Declined);
             }
-        }
+        },
         PatchMode::Auto => {
             // Proceed without prompting
-        }
+        },
     }
 
     insert_hook_entry(&mut root, hook_command)?;
@@ -1069,7 +1069,7 @@ fn insert_hook_entry(root: &mut serde_json::Value, hook_command: &str) -> Result
         None => {
             *root = serde_json::json!({});
             root.as_object_mut().expect("just-created json object")
-        }
+        },
     };
 
     let hooks = root_obj
@@ -1177,7 +1177,7 @@ fn run_default_mode(
         match patch_result {
             PatchResult::Patched => {
                 // Already printed by patch_settings_json_command
-            }
+            },
             PatchResult::AlreadyPresent => {
                 println!("\n  settings.json: hook already present");
                 if install_opencode {
@@ -1185,13 +1185,13 @@ fn run_default_mode(
                 } else {
                     println!("  Restart Claude Code. Test with: git status");
                 }
-            }
+            },
             PatchResult::Declined | PatchResult::Skipped => {
                 // Manual instructions already printed
-            }
+            },
             PatchResult::WouldPatch => {
                 // Cannot happen outside dry_run
-            }
+            },
         }
     }
 
@@ -1460,7 +1460,7 @@ fn run_hook_only_mode(
         match patch_result {
             PatchResult::Patched => {
                 // Already printed by patch_settings_json_command
-            }
+            },
             PatchResult::AlreadyPresent => {
                 println!("\n  settings.json: hook already present");
                 if install_opencode {
@@ -1468,13 +1468,13 @@ fn run_hook_only_mode(
                 } else {
                     println!("  Restart Claude Code. Test with: git status");
                 }
-            }
+            },
             PatchResult::Declined | PatchResult::Skipped => {
                 // Manual instructions already printed
-            }
+            },
             PatchResult::WouldPatch => {
                 // Cannot happen outside dry_run
-            }
+            },
         }
     }
 
@@ -1900,13 +1900,9 @@ fn uninstall_hermes_at(hermes_home: &Path, ctx: InitContext) -> Result<Vec<Strin
     Ok(removed)
 }
 
-fn patch_hermes_config(existing: &str) -> String {
-    rewrite_hermes_config(existing, true)
-}
+fn patch_hermes_config(existing: &str) -> String { rewrite_hermes_config(existing, true) }
 
-fn unpatch_hermes_config(existing: &str) -> String {
-    rewrite_hermes_config(existing, false)
-}
+fn unpatch_hermes_config(existing: &str) -> String { rewrite_hermes_config(existing, false) }
 
 fn rewrite_hermes_config(existing: &str, add_rtk: bool) -> String {
     if existing.trim().is_empty() {
@@ -2197,9 +2193,7 @@ fn hermes_missing_enabled_indents(
     (child_indent, item_indent)
 }
 
-fn yaml_line_without_ending(line: &str) -> &str {
-    line.trim_end_matches(['\r', '\n'])
-}
+fn yaml_line_without_ending(line: &str) -> &str { line.trim_end_matches(['\r', '\n']) }
 
 fn yaml_line_ending(line: &str) -> &str {
     if line.ends_with("\r\n") {
@@ -2426,7 +2420,7 @@ fn write_rtk_block(
                     .with_context(|| format!("Failed to write {}", path.display()))?;
                 println!("[ok] Added {} to {}", label, path.display());
             }
-        }
+        },
         RtkBlockUpsert::Updated => {
             if dry_run {
                 println!("[dry-run] would update {} in {}", label, path.display());
@@ -2435,12 +2429,12 @@ fn write_rtk_block(
                     .with_context(|| format!("Failed to write {}", path.display()))?;
                 println!("[ok] Updated {} in {}", label, path.display());
             }
-        }
+        },
         RtkBlockUpsert::Unchanged => {
             if !dry_run {
                 println!("[ok] {} already up to date in {}", label, path.display());
             }
-        }
+        },
         RtkBlockUpsert::Malformed => {
             eprintln!(
                 "[warn] Found '{}' without closing marker in {}",
@@ -2461,7 +2455,7 @@ fn write_rtk_block(
                 label,
                 path.display()
             );
-        }
+        },
     }
 
     Ok(action)
@@ -2777,9 +2771,7 @@ fn resolve_hermes_home_from_env(
         .context("Cannot determine Hermes home directory. Set $HERMES_HOME or $HOME.")
 }
 
-fn codex_rtk_md_ref(codex_dir: &Path) -> String {
-    format!("@{}", codex_dir.join(RTK_MD).display())
-}
+fn codex_rtk_md_ref(codex_dir: &Path) -> String { format!("@{}", codex_dir.join(RTK_MD).display()) }
 
 fn resolve_opencode_dir() -> Result<PathBuf> {
     resolve_home_subdir(CONFIG_DIR).map(|p| p.join(OPENCODE_SUBDIR))
@@ -2978,9 +2970,7 @@ fn remove_opencode_plugin(ctx: InitContext) -> Result<Vec<PathBuf>> {
 
 // ─── Cursor Agent support ─────────────────────────────────────────────
 
-fn resolve_cursor_dir() -> Result<PathBuf> {
-    resolve_home_subdir(CURSOR_DIR)
-}
+fn resolve_cursor_dir() -> Result<PathBuf> { resolve_home_subdir(CURSOR_DIR) }
 
 /// Install Cursor hooks: register binary command in hooks.json
 fn install_cursor_hooks(ctx: InitContext) -> Result<()> {
@@ -3119,7 +3109,7 @@ fn insert_cursor_hook_entry(root: &mut serde_json::Value) -> Result<()> {
         None => {
             *root = serde_json::json!({ "version": 1 });
             root.as_object_mut().expect("just-created json object")
-        }
+        },
     };
 
     root_obj.entry("version").or_insert(serde_json::json!(1));
@@ -3382,20 +3372,20 @@ fn show_claude_config() -> Result<()> {
         match integrity::verify_hook_at(&hook_path) {
             Ok(integrity::IntegrityStatus::Verified) => {
                 println!("[ok] Integrity: hook hash verified");
-            }
+            },
             Ok(integrity::IntegrityStatus::Tampered { .. }) => {
                 println!("[FAIL] Integrity: hook modified outside rtk init (run: rtk verify)");
-            }
+            },
             Ok(integrity::IntegrityStatus::NoBaseline) => {
                 println!("[warn] Integrity: no baseline hash (run: rtk init -g to establish)");
-            }
+            },
             Ok(integrity::IntegrityStatus::NotInstalled)
             | Ok(integrity::IntegrityStatus::OrphanedHash) => {
                 // Don't show integrity line if hook isn't installed
-            }
+            },
             Err(_) => {
                 println!("[warn] Integrity: check failed");
-            }
+            },
         }
     }
 
@@ -3603,9 +3593,7 @@ const GEMINI_HOOK_SCRIPT: &str = r#"#!/bin/bash
 exec rtk hook gemini
 "#;
 
-fn resolve_gemini_dir() -> Result<PathBuf> {
-    resolve_home_subdir(GEMINI_DIR)
-}
+fn resolve_gemini_dir() -> Result<PathBuf> { resolve_home_subdir(GEMINI_DIR) }
 
 /// Entry point for `rtk init --gemini`
 pub fn run_gemini(
@@ -3926,9 +3914,7 @@ rtk proxy <cmd>       # Run raw (no filtering) but track usage
 /// Entry point for `rtk init --copilot`.
 ///
 /// Installs in the current working directory's `.github/` subdirectory.
-pub fn run_copilot(ctx: InitContext) -> Result<()> {
-    run_copilot_at(Path::new("."), ctx)
-}
+pub fn run_copilot(ctx: InitContext) -> Result<()> { run_copilot_at(Path::new("."), ctx) }
 
 /// Same as [`run_copilot`] but operates relative to an explicit base path.
 ///
@@ -4180,8 +4166,9 @@ fn uninstall_copilot_global_at(copilot_dir: &Path, ctx: InitContext) -> Result<V
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use tempfile::TempDir;
+
+    use super::*;
 
     #[test]
     fn test_init_mentions_all_top_level_commands() {

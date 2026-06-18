@@ -1,4 +1,10 @@
 //! Applies TOML-defined filter rules to command output.
+use std::collections::BTreeMap;
+
+use lazy_static::lazy_static;
+use regex::{Regex, RegexSet};
+use serde::Deserialize;
+
 ///
 /// Provides a declarative pipeline of 8 stages that can be configured
 /// via TOML files. Lookup priority (first match wins):
@@ -23,10 +29,6 @@
 ///   7. max_lines            — absolute line cap
 ///   8. on_empty             — message if result is empty
 use super::constants::{FILTERS_TOML, RTK_DATA_DIR};
-use lazy_static::lazy_static;
-use regex::{Regex, RegexSet};
-use serde::Deserialize;
-use std::collections::BTreeMap;
 
 // Built-in filters: concatenated from src/filters/*.toml by build.rs at compile time.
 const BUILTIN_TOML: &str = include_str!(concat!(env!("OUT_DIR"), "/builtin_filters.toml"));
@@ -203,15 +205,15 @@ impl TomlFilterRegistry {
                             Err(e) => eprintln!("[rtk] warning: .rtk/filters.toml: {}", e),
                         }
                     }
-                }
+                },
                 crate::hooks::trust::TrustStatus::Untrusted => {
                     eprintln!("[rtk] WARNING: untrusted project filters (.rtk/filters.toml)");
                     eprintln!("[rtk] Filters NOT applied. Run `rtk trust` to review and enable.");
-                }
+                },
                 crate::hooks::trust::TrustStatus::ContentChanged { .. } => {
                     eprintln!("[rtk] WARNING: .rtk/filters.toml changed since trusted.");
                     eprintln!("[rtk] Filters NOT applied. Run `rtk trust` to re-review.");
-                }
+                },
             }
         }
 
@@ -480,7 +482,7 @@ pub fn apply_filter(filter: &CompiledFilter, stdout: &str) -> String {
     match &filter.line_filter {
         LineFilter::Strip(set) => lines.retain(|l| !set.is_match(l)),
         LineFilter::Keep(set) => lines.retain(|l| set.is_match(l)),
-        LineFilter::None => {}
+        LineFilter::None => {},
     }
 
     // 5. truncate_lines_at — uses utils::truncate (unicode-safe)
@@ -573,10 +575,10 @@ pub fn run_filter_tests(filter_name_opt: Option<&str>) -> VerifyResults {
                         &mut tested_filter_names,
                     );
                 }
-            }
+            },
             _ => {
                 eprintln!("[rtk] WARNING: untrusted project filters skipped in verify");
-            }
+            },
         }
     }
 
@@ -607,7 +609,7 @@ fn collect_test_outcomes(
         Err(e) => {
             eprintln!("[rtk] warning: TOML parse error during verify: {}", e);
             return;
-        }
+        },
     };
 
     // Compile all filters and track their names
@@ -617,7 +619,7 @@ fn collect_test_outcomes(
         match compile_filter(name.clone(), def) {
             Ok(f) => {
                 compiled_filters.insert(name, f);
-            }
+            },
             Err(e) => eprintln!("[rtk] warning: filter '{}' compilation error: {}", name, e),
         }
     }
@@ -640,7 +642,7 @@ fn collect_test_outcomes(
                     filter_name
                 );
                 continue;
-            }
+            },
         };
 
         for test in tests {

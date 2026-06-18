@@ -178,7 +178,9 @@ class RtkRewritePluginTest(unittest.TestCase):
                         stderr="unexpected stderr",
                     ),
                 ):
-                    with mock.patch.object(module.sys, "stderr", new_callable=io.StringIO) as stderr:
+                    with mock.patch.object(
+                        module.sys, "stderr", new_callable=io.StringIO
+                    ) as stderr:
                         callback(tool_name="terminal", args=args)
 
                 self.assertEqual({"command": "git status"}, args)
@@ -191,13 +193,18 @@ class RtkRewritePluginTest(unittest.TestCase):
         with mock.patch.object(
             module.subprocess,
             "run",
-            return_value=FakeCompletedProcess(returncode=4, stdout="rtk git status\n", stderr="bad news"),
+            return_value=FakeCompletedProcess(
+                returncode=4, stdout="rtk git status\n", stderr="bad news"
+            ),
         ):
             with mock.patch.object(module.sys, "stderr", new_callable=io.StringIO) as stderr:
                 callback(tool_name="terminal", args=args)
 
         self.assertEqual({"command": "git status"}, args)
-        self.assertEqual("rtk: hermes plugin warning: rtk rewrite failed with exit 4: bad news\n", stderr.getvalue())
+        self.assertEqual(
+            "rtk: hermes plugin warning: rtk rewrite failed with exit 4: bad news\n",
+            stderr.getvalue(),
+        )
 
     def test_rewrite_timeout_warns_and_preserves_original_command(self):
         module, callback = self.load_callback()
@@ -295,7 +302,9 @@ class InstalledRtkRewritePluginTest(unittest.TestCase):
     @unittest.skipUnless(shutil.which("cargo"), "cargo is required for installed flow")
     def test_cargo_init_installs_importable_plugin_that_rewrites_with_fake_rtk(self):
         repo_root = Path(__file__).resolve().parents[3]
-        self.assertTrue((repo_root / "Cargo.toml").exists(), "repo_root must point at the repository root")
+        self.assertTrue(
+            (repo_root / "Cargo.toml").exists(), "repo_root must point at the repository root"
+        )
         real_home = Path(os.path.expanduser("~"))
 
         with tempfile.TemporaryDirectory() as home, tempfile.TemporaryDirectory() as bin_dir:

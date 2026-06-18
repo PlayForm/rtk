@@ -145,12 +145,12 @@ fn run_forget() -> Result<()> {
         match send_erasure_request(&hash) {
             Ok(()) => {
                 println!("Erasure request sent to server.");
-            }
+            },
             Err(e) => {
                 eprintln!("rtk: could not reach server: {}", e);
                 eprintln!("  To complete erasure, email contact@rtk-ai.app");
                 eprintln!("  with your device hash: {}", hash);
-            }
+            },
         }
     }
 

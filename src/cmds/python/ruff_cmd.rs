@@ -1,12 +1,14 @@
 //! Filters Ruff linter and formatter output.
 
+use std::collections::HashMap;
+
+use anyhow::Result;
+use serde::Deserialize;
+
 use crate::core::config;
 use crate::core::runner;
 use crate::core::truncate::CAP_WARNINGS;
 use crate::core::utils::{resolved_command, truncate};
-use anyhow::Result;
-use serde::Deserialize;
-use std::collections::HashMap;
 
 #[derive(Debug, Deserialize)]
 struct RuffLocation {
@@ -103,7 +105,7 @@ pub fn filter_ruff_check_json(output: &str) -> String {
                 e,
                 truncate(output, config::limits().passthrough_max_chars)
             );
-        }
+        },
     };
 
     if diagnostics.is_empty() {

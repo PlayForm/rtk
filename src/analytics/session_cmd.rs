@@ -1,11 +1,13 @@
 //! Compares RTK-routed vs raw commands in a coding session.
 
+use std::fs;
+use std::path::PathBuf;
+
+use anyhow::{Context, Result};
+
 use crate::core::utils::format_tokens;
 use crate::discover::provider::{ClaudeProvider, ExtractedCommand, SessionProvider};
 use crate::discover::registry::{classify_command, split_command_chain, Classification};
-use anyhow::{Context, Result};
-use std::fs;
-use std::path::PathBuf;
 
 /// A summarized session for display.
 struct SessionSummary {
@@ -190,10 +192,12 @@ pub fn run(_verbose: u8) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
+    use std::io::Write;
+
+    use tempfile::NamedTempFile;
+
     use super::*;
     use crate::discover::provider::ExtractedCommand;
-    use std::io::Write;
-    use tempfile::NamedTempFile;
 
     fn make_cmd(command: &str, output_len: Option<usize>) -> ExtractedCommand {
         ExtractedCommand {

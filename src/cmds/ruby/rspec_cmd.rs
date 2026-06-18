@@ -5,13 +5,14 @@
 //! (e.g., user specified `--format documentation`) or when injected JSON output
 //! fails to parse.
 
-use crate::core::runner;
-use crate::core::truncate::{reduced, CAP_WARNINGS};
-use crate::core::utils::{fallback_tail, ruby_exec, truncate};
 use anyhow::Result;
 use lazy_static::lazy_static;
 use regex::Regex;
 use serde::Deserialize;
+
+use crate::core::runner;
+use crate::core::truncate::{reduced, CAP_WARNINGS};
+use crate::core::utils::{fallback_tail, ruby_exec, truncate};
 
 // rspec failures carry full backtraces — show fewer than a generic warning list.
 const MAX_RSPEC_FAILURES: usize = reduced(CAP_WARNINGS, 5);
@@ -176,7 +177,7 @@ fn filter_rspec_output(output: &str) -> String {
                 "[rtk] rspec: JSON parse failed ({}), using text fallback",
                 e
             );
-        }
+        },
     }
 
     filter_rspec_text(&stripped)
@@ -297,7 +298,7 @@ fn filter_rspec_text(output: &str) -> String {
                     summary_line = trimmed.to_string();
                     state = State::Summary;
                 }
-            }
+            },
             State::Failures => {
                 // New failure block starts with numbered pattern like "  1) ..."
                 if is_numbered_failure(trimmed) {
@@ -327,17 +328,17 @@ fn filter_rspec_text(output: &str) -> String {
                     current_failure.push_str(trimmed);
                     current_failure.push('\n');
                 }
-            }
+            },
             State::FailedExamples => {
                 if RE_RSPEC_SUMMARY.is_match(trimmed) {
                     summary_line = trimmed.to_string();
                     state = State::Summary;
                 }
                 // Skip "Failed examples:" section (just rspec commands to re-run)
-            }
+            },
             State::Summary => {
                 break;
-            }
+            },
         }
     }
 

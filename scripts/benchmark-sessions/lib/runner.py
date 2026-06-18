@@ -96,10 +96,9 @@ async def run_benchmark(
         if not task.codebase.is_github:
             local_tarball = _create_tarball(task.codebase.local_path())
 
-        await asyncio.gather(*(
-            setup_codebase(name, task.codebase, local_tarball)
-            for name in vm_names
-        ))
+        await asyncio.gather(
+            *(setup_codebase(name, task.codebase, local_tarball) for name in vm_names)
+        )
         print("  Codebases deployed")
 
         _print_step(3, total_steps, "Configuring RTK on ON VMs")
@@ -123,14 +122,12 @@ async def run_benchmark(
 
         if terminal_bench:
             _print_step(5, total_steps, "Running terminal-bench precision tests")
-            tb_on = await asyncio.gather(*(
-                run_terminal_bench(vm, "on", task.model, api_key)
-                for vm in on_vms
-            ))
-            tb_off = await asyncio.gather(*(
-                run_terminal_bench(vm, "off", task.model, api_key)
-                for vm in off_vms
-            ))
+            tb_on = await asyncio.gather(
+                *(run_terminal_bench(vm, "on", task.model, api_key) for vm in on_vms)
+            )
+            tb_off = await asyncio.gather(
+                *(run_terminal_bench(vm, "off", task.model, api_key) for vm in off_vms)
+            )
 
             manifest.terminal_bench = [_tb_to_entry(r) for r in list(tb_on) + list(tb_off)]
 
@@ -143,7 +140,9 @@ async def run_benchmark(
                 off_passed = sum(r.passed for r in ok_off)
                 on_rate = on_passed / on_total if on_total else 0
                 off_rate = off_passed / off_total if off_total else 0
-                print(f"  terminal-bench: ON pass rate={on_rate:.0%}, OFF pass rate={off_rate:.0%}, delta={on_rate - off_rate:+.0%}")
+                print(
+                    f"  terminal-bench: ON pass rate={on_rate:.0%}, OFF pass rate={off_rate:.0%}, delta={on_rate - off_rate:+.0%}"
+                )
 
             tb_errors = [r for r in list(tb_on) + list(tb_off) if r.error]
             for r in tb_errors:

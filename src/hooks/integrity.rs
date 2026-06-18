@@ -12,12 +12,14 @@
 //!
 //! Reference: SA-2025-RTK-001 (Finding F-01)
 
-use super::constants::{HOOKS_SUBDIR, REWRITE_HOOK_FILE};
-use super::init::resolve_claude_dir;
-use anyhow::{Context, Result};
-use sha2::{Digest, Sha256};
 use std::fs;
 use std::path::{Path, PathBuf};
+
+use anyhow::{Context, Result};
+use sha2::{Digest, Sha256};
+
+use super::constants::{HOOKS_SUBDIR, REWRITE_HOOK_FILE};
+use super::init::resolve_claude_dir;
 
 /// Filename for the stored hash (dotfile alongside hook)
 const HASH_FILENAME: &str = ".rtk-hook.sha256";
@@ -55,9 +57,7 @@ fn hash_path(hook_path: &Path) -> PathBuf {
 }
 
 /// Public accessor for the hash sidecar path (used by dry-run existence checks).
-pub fn hash_path_for(hook_path: &Path) -> PathBuf {
-    hash_path(hook_path)
-}
+pub fn hash_path_for(hook_path: &Path) -> PathBuf { hash_path(hook_path) }
 
 /// Store SHA-256 hash of the hook script after installation.
 ///
@@ -153,7 +153,7 @@ pub fn verify_hook_at(hook_path: &Path) -> Result<IntegrityStatus> {
                     actual,
                 })
             }
-        }
+        },
     }
 }
 
@@ -227,7 +227,7 @@ pub fn run_verify(verbose: u8) -> Result<()> {
             println!("PASS  hook integrity verified");
             println!("      sha256:{}", hash);
             println!("      {}", hook_path.display());
-        }
+        },
         IntegrityStatus::Tampered { expected, actual } => {
             eprintln!("FAIL  hook integrity check FAILED");
             eprintln!();
@@ -240,20 +240,20 @@ pub fn run_verify(verbose: u8) -> Result<()> {
             eprintln!("  To restore: rtk init -g --auto-patch");
             eprintln!("  To inspect: cat {}", hook_path.display());
             std::process::exit(1);
-        }
+        },
         IntegrityStatus::NoBaseline => {
             println!("WARN  no baseline hash found");
             println!("      Hook exists but was installed before integrity checks.");
             println!("      Run `rtk init -g` to establish baseline.");
-        }
+        },
         IntegrityStatus::NotInstalled => {
             println!("SKIP  RTK hook not installed");
             println!("      Run `rtk init -g` to install.");
-        }
+        },
         IntegrityStatus::OrphanedHash => {
             eprintln!("WARN  hash file exists but hook is missing");
             eprintln!("      Run `rtk init -g` to reinstall.");
-        }
+        },
     }
 
     Ok(())
@@ -283,11 +283,11 @@ pub fn runtime_check() -> Result<()> {
     match verify_hook_at(&hook_path)? {
         IntegrityStatus::Verified | IntegrityStatus::NotInstalled => {
             // All good, proceed
-        }
+        },
         IntegrityStatus::NoBaseline => {
             // Installed before integrity checks — don't block
             // Silently skip to avoid noise for users who haven't re-run init
-        }
+        },
         IntegrityStatus::Tampered { expected, actual } => {
             eprintln!("rtk: hook integrity check FAILED");
             eprintln!(
@@ -305,12 +305,12 @@ pub fn runtime_check() -> Result<()> {
             eprintln!("  To restore:  rtk init -g --auto-patch");
             eprintln!("  To inspect:  rtk verify");
             std::process::exit(1);
-        }
+        },
         IntegrityStatus::OrphanedHash => {
             eprintln!("rtk: warning: hash file exists but hook is missing");
             eprintln!("  Run `rtk init -g` to reinstall.");
             // Don't block — hook is gone, nothing to exploit
-        }
+        },
     }
 
     Ok(())
@@ -318,8 +318,9 @@ pub fn runtime_check() -> Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use tempfile::TempDir;
+
+    use super::*;
 
     #[test]
     fn test_compute_hash_deterministic() {
@@ -378,7 +379,7 @@ mod tests {
                 assert_ne!(expected, actual);
                 assert_eq!(expected.len(), 64);
                 assert_eq!(actual.len(), 64);
-            }
+            },
             other => panic!("Expected Tampered, got {:?}", other),
         }
     }

@@ -11,12 +11,14 @@
 //! otherwise replace non-UTF-8 bytes with U+FFFD and corrupt the stream
 //! (`#1087`).
 
+use std::borrow::Cow;
+use std::io::{IsTerminal, Write};
+
+use anyhow::{Context, Result};
+
 use crate::core::tee::force_tee_hint;
 use crate::core::tracking;
 use crate::core::utils::resolved_command;
-use anyhow::{Context, Result};
-use std::borrow::Cow;
-use std::io::{IsTerminal, Write};
 
 const MAX_RESPONSE_SIZE: usize = 500;
 
@@ -98,9 +100,7 @@ pub fn run(args: &[String], verbose: u8) -> Result<i32> {
 /// This is correct by construction: the only reason to passthrough raw
 /// bytes is to avoid the lossy conversion, and the only bytes that suffer
 /// from it are the non-UTF-8 ones.
-fn is_binary(bytes: &[u8]) -> bool {
-    std::str::from_utf8(bytes).is_err()
-}
+fn is_binary(bytes: &[u8]) -> bool { std::str::from_utf8(bytes).is_err() }
 
 fn filter_curl_output(raw: &str, is_tty: bool) -> FilterResult<'_> {
     let trimmed = raw.trim();

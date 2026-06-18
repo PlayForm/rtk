@@ -1,10 +1,12 @@
 //! Filters find results by grouping files by directory.
 
-use crate::core::tracking;
-use anyhow::{Context, Result};
-use ignore::WalkBuilder;
 use std::collections::HashMap;
 use std::path::Path;
+
+use anyhow::{Context, Result};
+use ignore::WalkBuilder;
+
+use crate::core::tracking;
 
 /// Match a filename against a glob pattern (supports `*` and `?`).
 fn glob_match(pattern: &str, name: &str) -> bool {
@@ -18,7 +20,7 @@ fn glob_match_inner(pat: &[u8], name: &[u8]) -> bool {
             // '*' matches zero or more characters
             glob_match_inner(&pat[1..], name)
                 || (!name.is_empty() && glob_match_inner(pat, &name[1..]))
-        }
+        },
         (Some(b'?'), Some(_)) => glob_match_inner(&pat[1..], &name[1..]),
         (Some(&p), Some(&n)) if p == n => glob_match_inner(&pat[1..], &name[1..]),
         _ => false,
@@ -114,27 +116,27 @@ fn parse_native_find_args(args: &[String]) -> Result<FindArgs> {
                 if let Some(val) = next_arg(args, &mut i) {
                     parsed.pattern = val;
                 }
-            }
+            },
             "-iname" => {
                 if let Some(val) = next_arg(args, &mut i) {
                     parsed.pattern = val;
                     parsed.case_insensitive = true;
                 }
-            }
+            },
             "-type" => {
                 if let Some(val) = next_arg(args, &mut i) {
                     parsed.file_type = val;
                 }
-            }
+            },
             "-maxdepth" => {
                 if let Some(val) = next_arg(args, &mut i) {
                     parsed.max_depth = Some(val.parse().context("invalid -maxdepth value")?);
                 }
-            }
+            },
             flag if flag.starts_with('-') => {
                 eprintln!("rtk find: unknown flag '{}', ignored", flag);
-            }
-            _ => {}
+            },
+            _ => {},
         }
         i += 1;
     }
@@ -162,13 +164,13 @@ fn parse_rtk_find_args(args: &[String]) -> Result<FindArgs> {
                 if let Some(val) = next_arg(args, &mut i) {
                     parsed.max_results = val.parse().context("invalid --max value")?;
                 }
-            }
+            },
             "-t" | "--file-type" => {
                 if let Some(val) = next_arg(args, &mut i) {
                     parsed.file_type = val;
                 }
-            }
-            _ => {}
+            },
+            _ => {},
         }
         i += 1;
     }
@@ -389,9 +391,7 @@ mod tests {
     use super::*;
 
     /// Convert string slices to Vec<String> for test convenience.
-    fn args(values: &[&str]) -> Vec<String> {
-        values.iter().map(|s| s.to_string()).collect()
-    }
+    fn args(values: &[&str]) -> Vec<String> { values.iter().map(|s| s.to_string()).collect() }
 
     // --- glob_match unit tests ---
 

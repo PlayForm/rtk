@@ -1,5 +1,6 @@
-use anyhow::Result;
 use std::io::Read;
+
+use anyhow::Result;
 
 use crate::core::stream::RAW_CAP;
 use crate::core::truncate::{CAP_LIST, CAP_WARNINGS};
@@ -30,21 +31,15 @@ pub fn resolve_filter(name: &str) -> Option<fn(&str) -> String> {
     }
 }
 
-fn go_test_wrapper(input: &str) -> String {
-    crate::cmds::go::go_cmd::filter_go_test_json(input)
-}
+fn go_test_wrapper(input: &str) -> String { crate::cmds::go::go_cmd::filter_go_test_json(input) }
 
-fn git_status_wrapper(input: &str) -> String {
-    crate::cmds::git::git::format_status_output(input)
-}
+fn git_status_wrapper(input: &str) -> String { crate::cmds::git::git::format_status_output(input) }
 
 fn git_log_wrapper(input: &str) -> String {
     crate::cmds::git::git::filter_log_output(input, 50, false, false)
 }
 
-fn git_diff_wrapper(input: &str) -> String {
-    crate::cmds::git::git::compact_diff(input, 200)
-}
+fn git_diff_wrapper(input: &str) -> String { crate::cmds::git::git::compact_diff(input, 200) }
 
 fn vitest_wrapper(input: &str) -> String {
     use crate::cmds::js::vitest_cmd::VitestParser;
@@ -68,7 +63,10 @@ fn grep_wrapper(input: &str) -> String {
         if parts.len() == 3 {
             if let Ok(_line_num) = parts[1].parse::<usize>() {
                 total += 1;
-                by_file.entry(parts[0]).or_default().push((parts[1], parts[2]));
+                by_file
+                    .entry(parts[0])
+                    .or_default()
+                    .push((parts[1], parts[2]));
             }
         }
     }
@@ -197,16 +195,15 @@ pub fn auto_detect_filter(input: &str) -> fn(&str) -> String {
     identity_filter
 }
 
-fn identity_filter(input: &str) -> String {
-    input.to_string()
-}
+fn identity_filter(input: &str) -> String { input.to_string() }
 
 fn apply_filter(filter_fn: fn(&str) -> String, input: &str) -> String {
-    std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| filter_fn(input)))
-        .unwrap_or_else(|_| {
+    std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| filter_fn(input))).unwrap_or_else(
+        |_| {
             eprintln!("[rtk] warning: filter panicked — passing through raw output");
             input.to_string()
-        })
+        },
+    )
 }
 
 pub fn run(filter_name: Option<&str>, passthrough: bool) -> Result<()> {
@@ -250,7 +247,11 @@ mod tests {
     fn test_resolve_filter_cargo_test() {
         let f = resolve_filter("cargo-test").expect("cargo-test filter must exist");
         let out = f("test result: ok. 5 passed; 0 failed");
-        assert!(out.contains("passed") || out.contains("PASS"), "out={}", out);
+        assert!(
+            out.contains("passed") || out.contains("PASS"),
+            "out={}",
+            out
+        );
     }
 
     #[test]
@@ -491,9 +492,7 @@ mod tests {
         assert_eq!(result, input);
     }
 
-    fn count_tokens(s: &str) -> usize {
-        s.split_whitespace().count()
-    }
+    fn count_tokens(s: &str) -> usize { s.split_whitespace().count() }
 
     #[test]
     fn test_grep_wrapper_token_savings() {
@@ -512,7 +511,9 @@ mod tests {
         assert!(
             savings >= 40.0, // TODO: grep pipe filter below 60% target — improve grouping
             "grep filter: expected ≥40% savings, got {:.1}% (in={}, out={})",
-            savings, count_tokens(&input), count_tokens(&output)
+            savings,
+            count_tokens(&input),
+            count_tokens(&output)
         );
     }
 
@@ -533,7 +534,9 @@ mod tests {
         assert!(
             savings >= 40.0, // TODO: find pipe filter below 60% target — improve grouping
             "find filter: expected ≥40% savings, got {:.1}% (in={}, out={})",
-            savings, count_tokens(&input), count_tokens(&output)
+            savings,
+            count_tokens(&input),
+            count_tokens(&output)
         );
     }
 

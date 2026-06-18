@@ -1,14 +1,16 @@
 //! Filters golangci-lint output, grouping issues by rule.
 
+use std::collections::HashMap;
+use std::ffi::OsString;
+
+use anyhow::Result;
+use serde::Deserialize;
+
 use crate::core::config;
 use crate::core::runner;
 use crate::core::stream::exec_capture;
 use crate::core::truncate::CAP_WARNINGS;
 use crate::core::utils::{resolved_command, truncate};
-use anyhow::Result;
-use serde::Deserialize;
-use std::collections::HashMap;
-use std::ffi::OsString;
 
 const GOLANGCI_SUBCOMMANDS: &[&str] = &[
     "cache",
@@ -112,7 +114,7 @@ pub(crate) fn detect_major_version() -> u32 {
                 &r.stdout
             };
             parse_major_version(version_text)
-        }
+        },
         Err(_) => 1,
     }
 }
@@ -273,7 +275,7 @@ pub(crate) fn filter_golangci_json(output: &str, version: u32) -> String {
                 e,
                 truncate(output, config::limits().passthrough_max_chars)
             );
-        }
+        },
     };
 
     let issues = golangci_output.issues;
@@ -702,9 +704,7 @@ mod tests {
         }
     }
 
-    fn count_tokens(text: &str) -> usize {
-        text.split_whitespace().count()
-    }
+    fn count_tokens(text: &str) -> usize { text.split_whitespace().count() }
 
     #[test]
     fn test_golangci_v2_token_savings() {

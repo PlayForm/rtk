@@ -1,18 +1,18 @@
 //! Runs code formatters (Prettier, Ruff) and shows only files that changed.
 
+use std::path::Path;
+
+use anyhow::{Context, Result};
+
 use crate::core::stream::exec_capture;
 use crate::core::tracking;
 use crate::core::truncate::CAP_WARNINGS;
 use crate::core::utils::{package_manager_exec, resolved_command};
 use crate::prettier_cmd;
 use crate::ruff_cmd;
-use anyhow::{Context, Result};
-use std::path::Path;
 
 /// Detect formatter from project files or explicit argument
-fn detect_formatter(args: &[String]) -> String {
-    detect_formatter_in_dir(args, Path::new("."))
-}
+fn detect_formatter(args: &[String]) -> String { detect_formatter_in_dir(args, Path::new(".")) }
 
 /// Detect formatter with explicit directory (for testing)
 fn detect_formatter_in_dir(args: &[String], dir: &Path) -> String {
@@ -87,12 +87,12 @@ pub fn run(args: &[String], verbose: u8) -> Result<i32> {
         // Inject --check if not present for check mode
         "black" if !user_args.iter().any(|a| a == "--check" || a == "--diff") => {
             cmd.arg("--check");
-        }
+        },
         // Add "format" subcommand if not present
         "ruff" if user_args.is_empty() || !user_args[0].starts_with("format") => {
             cmd.arg("format");
-        }
-        _ => {}
+        },
+        _ => {},
     }
 
     // Add user arguments
@@ -282,10 +282,12 @@ fn compact_path(path: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::fs;
     use std::io::Write;
+
     use tempfile::TempDir;
+
+    use super::*;
 
     #[test]
     fn test_detect_formatter_from_explicit_arg() {

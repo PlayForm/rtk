@@ -1,10 +1,11 @@
 //! Parses dotnet format JSON reports into compact summaries.
 
-use anyhow::{Context, Result};
-use serde::Deserialize;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
+
+use anyhow::{Context, Result};
+use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
@@ -93,8 +94,9 @@ pub fn parse_format_report(path: &Path) -> Result<FormatSummary> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::path::PathBuf;
+
+    use super::*;
 
     fn fixture(name: &str) -> PathBuf {
         PathBuf::from(env!("CARGO_MANIFEST_DIR"))

@@ -1,5 +1,10 @@
 //! Filters ESLint and Biome linter output, grouping violations by rule.
 
+use std::collections::HashMap;
+
+use anyhow::{Context, Result};
+use serde::{Deserialize, Serialize};
+
 use crate::core::config;
 use crate::core::stream::exec_capture;
 use crate::core::tracking;
@@ -7,9 +12,6 @@ use crate::core::truncate::{CAP_ERRORS, CAP_WARNINGS};
 use crate::core::utils::{package_manager_exec, resolved_command, truncate};
 use crate::mypy_cmd;
 use crate::ruff_cmd;
-use anyhow::{Context, Result};
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct EslintMessage {
@@ -107,21 +109,21 @@ pub fn run(args: &[String], verbose: u8) -> Result<i32> {
     match linter {
         "eslint" => {
             cmd.arg("-f").arg("json");
-        }
+        },
         // Force JSON output for ruff check
         "ruff" if !effective_args.contains(&"--output-format".to_string()) => {
             cmd.arg("check").arg("--output-format=json");
-        }
+        },
         // Force JSON2 output for pylint
         "pylint" if !effective_args.contains(&"--output-format".to_string()) => {
             cmd.arg("--output-format=json2");
-        }
+        },
         "mypy" => {
             // mypy uses default text output (no special flags)
-        }
+        },
         _ => {
             // Other linters: no special formatting
-        }
+        },
     }
 
     // Add user arguments (skip first if it was the linter name, and skip "check" for ruff if we added it)
@@ -193,7 +195,7 @@ pub fn run(args: &[String], verbose: u8) -> Result<i32> {
             } else {
                 "Ruff: No issues found".to_string()
             }
-        }
+        },
         "pylint" => filter_pylint_json(&result.stdout),
         "mypy" => mypy_cmd::filter_mypy_output(&raw),
         _ => filter_generic_lint(&raw),
@@ -232,7 +234,7 @@ fn filter_eslint_json(output: &str) -> String {
                 e,
                 truncate(output, config::limits().passthrough_max_chars)
             );
-        }
+        },
     };
 
     // Count total issues
@@ -331,7 +333,7 @@ fn filter_pylint_json(output: &str) -> String {
                 e,
                 truncate(output, config::limits().passthrough_max_chars)
             );
-        }
+        },
     };
 
     if diagnostics.is_empty() {
@@ -350,7 +352,7 @@ fn filter_pylint_json(output: &str) -> String {
             "warning" => warnings += 1,
             "convention" => conventions += 1,
             "refactor" => refactors += 1,
-            _ => {}
+            _ => {},
         }
     }
 
@@ -393,7 +395,6 @@ fn filter_pylint_json(output: &str) -> String {
         result.push('\n');
     }
 
-
     // Show top symbols (rules)
     let mut symbol_counts: Vec<_> = by_symbol.iter().collect();
     symbol_counts.sort_by(|a, b| b.1.cmp(a.1));
@@ -429,7 +430,10 @@ fn filter_pylint_json(output: &str) -> String {
     }
 
     if file_counts.len() > MAX_FILES {
-        result.push_str(&format!("\n… +{} more files\n", file_counts.len() - MAX_FILES));
+        result.push_str(&format!(
+            "\n… +{} more files\n",
+            file_counts.len() - MAX_FILES
+        ));
         let all_file_lines = file_counts
             .iter()
             .map(|(file, count)| format!("{} ({} issues)", compact_path(file), count))

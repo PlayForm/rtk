@@ -1,11 +1,13 @@
 //! Summarizes project dependencies from lock files and manifests.
 
-use crate::core::tracking;
-use crate::core::truncate::{reduced, CAP_WARNINGS};
-use anyhow::Result;
-use regex::Regex;
 use std::fs;
 use std::path::Path;
+
+use anyhow::Result;
+use regex::Regex;
+
+use crate::core::tracking;
+use crate::core::truncate::{reduced, CAP_WARNINGS};
 
 const MAX_DEPS: usize = CAP_WARNINGS;
 // dev deps are secondary to prod — show fewer.
@@ -105,7 +107,7 @@ fn summarize_cargo_str(path: &Path) -> Result<String> {
             match current_section.as_str() {
                 "dependencies" => deps.push(dep),
                 "dev-dependencies" => dev_deps.push(dep),
-                _ => {}
+                _ => {},
             }
         }
     }
@@ -125,7 +127,10 @@ fn summarize_cargo_str(path: &Path) -> Result<String> {
             out.push_str(&format!("    {}\n", d));
         }
         if dev_deps.len() > MAX_DEV_DEPS {
-            out.push_str(&format!("    ... +{} more\n", dev_deps.len() - MAX_DEV_DEPS));
+            out.push_str(&format!(
+                "    ... +{} more\n",
+                dev_deps.len() - MAX_DEV_DEPS
+            ));
         }
     }
     Ok(out)
@@ -158,7 +163,10 @@ fn summarize_package_json_str(path: &Path) -> Result<String> {
         out.push_str(&format!("  Dev Dependencies ({}):\n", dev_deps.len()));
         for (i, (name, _)) in dev_deps.iter().enumerate() {
             if i >= MAX_DEV_DEPS {
-                out.push_str(&format!("    ... +{} more\n", dev_deps.len() - MAX_DEV_DEPS));
+                out.push_str(&format!(
+                    "    ... +{} more\n",
+                    dev_deps.len() - MAX_DEV_DEPS
+                ));
                 break;
             }
             out.push_str(&format!("    {}\n", name));

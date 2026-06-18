@@ -1,9 +1,10 @@
 //! Filters pytest output to show only failures and the summary line.
 
+use anyhow::Result;
+
 use crate::core::runner;
 use crate::core::truncate::CAP_WARNINGS;
 use crate::core::utils::{resolved_command, tool_exists, truncate};
-use anyhow::Result;
 
 const MAX_XFAIL: usize = CAP_WARNINGS;
 const MAX_PYTEST_FAILURES: usize = CAP_WARNINGS;
@@ -28,7 +29,9 @@ pub fn run(args: &[String], verbose: u8) -> Result<i32> {
     let has_tb_flag = args.iter().any(|a| a.starts_with("--tb"));
     let has_quiet_flag = args.iter().any(|a| a == "-q" || a == "--quiet");
     // Only treat a short `-r…` as pytest's report flag (not `--randomly-seed` etc.)
-    let has_report_flag = args.iter().any(|a| a.starts_with("-r") && !a.starts_with("--"));
+    let has_report_flag = args
+        .iter()
+        .any(|a| a.starts_with("-r") && !a.starts_with("--"));
 
     if !has_tb_flag {
         cmd.arg("--tb=short");
@@ -113,7 +116,7 @@ pub(crate) fn filter_pytest_output(output: &str) -> String {
                 if trimmed.starts_with("collected") {
                     state = ParseState::TestProgress;
                 }
-            }
+            },
             ParseState::TestProgress => {
                 // Lines like "tests/test_foo.py ....  [ 40%]"
                 if !trimmed.is_empty()
@@ -122,7 +125,7 @@ pub(crate) fn filter_pytest_output(output: &str) -> String {
                 {
                     test_files.push(trimmed.to_string());
                 }
-            }
+            },
             ParseState::Failures => {
                 // Collect failure details
                 if trimmed.starts_with("___") {
@@ -135,7 +138,7 @@ pub(crate) fn filter_pytest_output(output: &str) -> String {
                 } else if !trimmed.is_empty() && !trimmed.starts_with("===") {
                     current_failure.push(trimmed.to_string());
                 }
-            }
+            },
             ParseState::Summary => {
                 // FAILED test lines
                 if trimmed.starts_with("FAILED") || trimmed.starts_with("ERROR") {
@@ -143,7 +146,7 @@ pub(crate) fn filter_pytest_output(output: &str) -> String {
                 } else if trimmed.starts_with("XFAIL") || trimmed.starts_with("XPASS") {
                     xfail_lines.push(trimmed.to_string());
                 }
-            }
+            },
         }
     }
 
@@ -213,7 +216,9 @@ fn build_pytest_summary(
         if xfail_lines.len() > MAX_XFAIL {
             result.push_str(&format!("  … +{} more\n", xfail_lines.len() - MAX_XFAIL));
             let all_xfail = xfail_lines.join("\n");
-            if let Some(hint) = crate::core::tee::force_tee_tail_hint(&all_xfail, "pytest-xfail", MAX_XFAIL + 1) {
+            if let Some(hint) =
+                crate::core::tee::force_tee_tail_hint(&all_xfail, "pytest-xfail", MAX_XFAIL + 1)
+            {
                 result.push_str(&format!("  {}\n", hint));
             }
         }
@@ -411,10 +416,7 @@ collected 0 items
         assert_eq!((c.passed, c.failed, c.skipped), (3, 1, 2));
 
         let c = parse_summary_line("=== 2 passed, 1 failed, 2 xfailed, 1 xpassed in 1.0s ===");
-        assert_eq!(
-            (c.passed, c.failed, c.xfailed, c.xpassed),
-            (2, 1, 2, 1)
-        );
+        assert_eq!((c.passed, c.failed, c.xfailed, c.xpassed), (2, 1, 2, 1));
     }
 
     #[test]
@@ -441,10 +443,7 @@ collected 0 items
             .lines()
             .filter(|l| l.trim().starts_with("XFAIL"))
             .count();
-        assert!(
-            listed <= 10,
-            "MAX_XFAIL cap not enforced: listed {listed}"
-        );
+        assert!(listed <= 10, "MAX_XFAIL cap not enforced: listed {listed}");
         assert!(result.contains("… +5 more"), "missing '+N more': {result}");
     }
 

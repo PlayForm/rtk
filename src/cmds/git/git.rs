@@ -1,5 +1,11 @@
 //! Filters git output — log, status, diff, and more — keeping just the essential info.
 
+use std::ffi::OsString;
+use std::process::Command;
+use std::process::Stdio;
+
+use anyhow::{Context, Result};
+
 use crate::core::args_utils;
 use crate::core::stream::{
     self, exec_capture, CaptureResult, FilterMode, LineHandler, LineStreamFilter, StdinMode,
@@ -7,10 +13,6 @@ use crate::core::stream::{
 use crate::core::tracking;
 use crate::core::truncate::CAP_WARNINGS;
 use crate::core::utils::{exit_code_from_output, exit_code_from_status, resolved_command};
-use anyhow::{Context, Result};
-use std::ffi::OsString;
-use std::process::Command;
-use std::process::Stdio;
 
 #[derive(Debug, Clone)]
 pub enum GitCommand {
@@ -59,7 +61,7 @@ fn uses_compact_status_path(args: &[String]) -> bool {
         match arg.as_str() {
             "-b" | "--branch" => saw_branch = true,
             "-sb" | "-bs" => return true,
-            "-s" | "--short" => {}
+            "-s" | "--short" => {},
             _ => return false,
         }
     }
@@ -98,7 +100,7 @@ pub fn run(
         GitCommand::Fetch => run_fetch(args, verbose, global_args),
         GitCommand::Stash { subcommand } => {
             run_stash(subcommand.as_deref(), args, verbose, global_args)
-        }
+        },
         GitCommand::Worktree => run_worktree(args, verbose, global_args),
     }
 }
@@ -1501,7 +1503,7 @@ fn format_stash_message(subcommand: Option<&str>, result: &CaptureResult) -> Str
             } else {
                 "ok stashed".to_string()
             }
-        }
+        },
         Some(sub) => format!("ok stash {}", sub),
     }
 }
@@ -1539,7 +1541,7 @@ fn run_stash(
                 &result.stdout,
                 &filtered,
             );
-        }
+        },
         Some("show") => {
             let mut cmd = git_cmd(global_args);
             cmd.args(["stash", "show", "-p"]);
@@ -1564,7 +1566,7 @@ fn run_stash(
                 &result.stdout,
                 &filtered,
             );
-        }
+        },
         Some("apply") | Some("branch") | Some("clear") | Some("create") | Some("drop")
         | Some("export") | Some("import") | Some("pop") | Some("store") => {
             let sub = subcommand.unwrap();
@@ -1598,7 +1600,7 @@ fn run_stash(
             if !result.success() {
                 return Ok(result.exit_code);
             }
-        }
+        },
         // Default: "git stash [push] [--] [<pathspec>...]" or "git stash save [<message>]"
         Some(_) | None => {
             let (sub, arg) = match subcommand {
@@ -1640,7 +1642,7 @@ fn run_stash(
             if !result.success() {
                 return Ok(result.exit_code);
             }
-        }
+        },
     }
 
     Ok(0)
@@ -2293,9 +2295,7 @@ A  added.rs
 
     #[test]
     fn test_filter_log_output_token_savings() {
-        fn count_tokens(text: &str) -> usize {
-            text.split_whitespace().count()
-        }
+        fn count_tokens(text: &str) -> usize { text.split_whitespace().count() }
         // Simulate verbose git log output (default format with full metadata)
         let input = (0..20)
             .map(|i| {

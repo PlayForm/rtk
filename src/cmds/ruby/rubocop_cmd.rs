@@ -5,10 +5,11 @@
 //! when the user specifies a custom format, or when injected JSON output fails
 //! to parse.
 
-use crate::core::runner;
-use crate::core::utils::ruby_exec;
 use anyhow::Result;
 use serde::Deserialize;
+
+use crate::core::runner;
+use crate::core::utils::ruby_exec;
 
 // ── JSON structures matching RuboCop's --format json output ─────────────────
 
@@ -109,7 +110,7 @@ fn filter_rubocop_json(output: &str) -> String {
         Err(e) => {
             eprintln!("[rtk] rubocop: JSON parse failed ({})", e);
             return crate::core::utils::fallback_tail(output, "rubocop (JSON parse error)", 5);
-        }
+        },
     };
 
     let s = &rubocop.summary;

@@ -1,13 +1,15 @@
 //! Reads MSBuild binary log files and extracts errors and test results.
 
-use crate::core::utils::strip_ansi;
+use std::collections::HashSet;
+use std::io::{Cursor, Read};
+use std::path::Path;
+
 use anyhow::{Context, Result};
 use flate2::read::GzDecoder;
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::collections::HashSet;
-use std::io::{Cursor, Read};
-use std::path::Path;
+
+use crate::core::utils::strip_ansi;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BinlogIssue {
@@ -333,7 +335,7 @@ fn parse_events_from_binlog(path: &Path) -> Result<ParsedBinlog> {
                     .read_dotnet_string()
                     .context("failed to read string record")?;
                 parsed.string_records.push(text);
-            }
+            },
             RECORD_NAME_VALUE_LIST | RECORD_PROJECT_IMPORT_ARCHIVE => {
                 let len = reader
                     .read_7bit_i32()
@@ -344,7 +346,7 @@ fn parse_events_from_binlog(path: &Path) -> Result<ParsedBinlog> {
                 reader
                     .skip(len as usize)
                     .context("failed to skip auxiliary record payload")?;
-            }
+            },
             _ => {
                 let len = reader
                     .read_7bit_i32()
@@ -359,7 +361,7 @@ fn parse_events_from_binlog(path: &Path) -> Result<ParsedBinlog> {
                 let mut event_reader = BinReader::new(payload);
                 let _ =
                     parse_event_record(kind, &mut event_reader, file_format_version, &mut parsed);
-            }
+            },
         }
     }
 
@@ -376,12 +378,12 @@ fn parse_event_record(
         RECORD_BUILD_STARTED => {
             let fields = read_event_fields(reader, file_format_version, parsed, false)?;
             parsed.build_started_ticks = fields.timestamp_ticks;
-        }
+        },
         RECORD_BUILD_FINISHED => {
             let fields = read_event_fields(reader, file_format_version, parsed, false)?;
             parsed.build_finished_ticks = fields.timestamp_ticks;
             parsed.build_succeeded = Some(reader.read_bool()?);
-        }
+        },
         RECORD_PROJECT_STARTED => {
             let _fields = read_event_fields(reader, file_format_version, parsed, false)?;
             if reader.read_bool()? {
@@ -392,7 +394,7 @@ fn parse_event_record(
                     parsed.project_files.insert(project_file);
                 }
             }
-        }
+        },
         RECORD_PROJECT_FINISHED => {
             let _fields = read_event_fields(reader, file_format_version, parsed, false)?;
             if let Some(project_file) = read_optional_string(reader, parsed)? {
@@ -401,7 +403,7 @@ fn parse_event_record(
                 }
             }
             let _ = reader.read_bool()?;
-        }
+        },
         RECORD_ERROR | RECORD_WARNING => {
             let fields = read_event_fields(reader, file_format_version, parsed, false)?;
 
@@ -427,20 +429,20 @@ fn parse_event_record(
             } else {
                 parsed.warnings.push(issue);
             }
-        }
+        },
         RECORD_MESSAGE => {
             let fields = read_event_fields(reader, file_format_version, parsed, true)?;
             if let Some(message) = fields.message {
                 parsed.messages.push(message);
             }
-        }
+        },
         RECORD_CRITICAL_BUILD_MESSAGE => {
             let fields = read_event_fields(reader, file_format_version, parsed, false)?;
             if let Some(message) = fields.message {
                 parsed.messages.push(message);
             }
-        }
-        _ => {}
+        },
+        _ => {},
     }
 
     Ok(())
@@ -558,9 +560,7 @@ impl<'a> BinReader<'a> {
         }
     }
 
-    fn is_eof(&self) -> bool {
-        (self.cursor.position() as usize) >= self.cursor.get_ref().len()
-    }
+    fn is_eof(&self) -> bool { (self.cursor.position() as usize) >= self.cursor.get_ref().len() }
 
     fn read_exact(&mut self, len: usize) -> Result<&'a [u8]> {
         let start = self.cursor.position() as usize;
@@ -577,13 +577,9 @@ impl<'a> BinReader<'a> {
         Ok(())
     }
 
-    fn read_u8(&mut self) -> Result<u8> {
-        Ok(self.read_exact(1)?[0])
-    }
+    fn read_u8(&mut self) -> Result<u8> { Ok(self.read_exact(1)?[0]) }
 
-    fn read_bool(&mut self) -> Result<bool> {
-        Ok(self.read_u8()? != 0)
-    }
+    fn read_bool(&mut self) -> Result<bool> { Ok(self.read_u8()? != 0) }
 
     fn read_i32_le(&mut self) -> Result<i32> {
         let b = self.read_exact(4)?;
@@ -690,13 +686,13 @@ pub fn parse_build_from_text(text: &str) -> BuildSummary {
                 if seen_errors.insert(key) {
                     summary.errors.push(issue);
                 }
-            }
+            },
             Some("warning") => {
                 if seen_warnings.insert(key) {
                     summary.warnings.push(issue);
                 }
-            }
-            _ => {}
+            },
+            _ => {},
         }
     }
 
@@ -717,9 +713,9 @@ pub fn parse_build_from_text(text: &str) -> BuildSummary {
             {
                 Some("warning") => {
                     warning_count_from_summary = warning_count_from_summary.max(count)
-                }
+                },
                 Some("error") => error_count_from_summary = error_count_from_summary.max(count),
-                _ => {}
+                _ => {},
             }
         }
 
@@ -1021,22 +1017,20 @@ pub fn parse_restore_issues_from_text(text: &str) -> (Vec<BinlogIssue>, Vec<Binl
                 if seen_errors.insert(key) {
                     errors.push(issue);
                 }
-            }
+            },
             Some("warning") => {
                 if seen_warnings.insert(key) {
                     warnings.push(issue);
                 }
-            }
-            _ => {}
+            },
+            _ => {},
         }
     }
 
     (errors, warnings)
 }
 
-fn count_projects(text: &str) -> usize {
-    PROJECT_PATH_RE.captures_iter(text).count()
-}
+fn count_projects(text: &str) -> usize { PROJECT_PATH_RE.captures_iter(text).count() }
 
 fn extract_duration(text: &str) -> Option<String> {
     DURATION_RE
@@ -1133,10 +1127,12 @@ fn is_likely_diagnostic_code(code: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use std::io::Write;
+
     use flate2::write::GzEncoder;
     use flate2::Compression;
-    use std::io::Write;
+
+    use super::*;
 
     fn write_7bit_i32(buf: &mut Vec<u8>, value: i32) {
         let mut v = value as u32;

@@ -1,8 +1,9 @@
 //! Strips comments and boilerplate from source code to save tokens.
 
+use std::str::FromStr;
+
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::str::FromStr;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FilterLevel {
@@ -71,7 +72,7 @@ impl Language {
             "json" | "jsonc" | "json5" | "yaml" | "yml" | "toml" | "xml" | "csv" | "tsv"
             | "graphql" | "gql" | "sql" | "md" | "markdown" | "txt" | "env" | "lock" => {
                 Language::Data
-            }
+            },
             _ => Language::Unknown,
         }
     }
@@ -148,9 +149,7 @@ pub struct CommentPatterns {
 pub struct NoFilter;
 
 impl FilterStrategy for NoFilter {
-    fn filter(&self, content: &str, _lang: &Language) -> String {
-        content.to_string()
-    }
+    fn filter(&self, content: &str, _lang: &Language) -> String { content.to_string() }
 }
 
 pub struct MinimalFilter;

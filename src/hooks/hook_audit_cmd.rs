@@ -1,8 +1,9 @@
 //! Audits hook activity logs to show what commands were rewritten and when.
 
-use anyhow::{Context, Result};
 use std::collections::HashMap;
 use std::path::PathBuf;
+
+use anyhow::{Context, Result};
 
 /// Default log file location (aligned with hook's $HOME/.local/share/rtk/).
 fn default_log_path() -> PathBuf {

@@ -1,8 +1,9 @@
 //! Translates a raw shell command into its RTK-optimized equivalent.
 
+use std::io::Write;
+
 use super::permissions::{check_command, PermissionVerdict};
 use crate::discover::registry;
-use std::io::Write;
 
 /// Run the `rtk rewrite` command.
 ///
@@ -25,12 +26,12 @@ pub fn run(cmd: &str) -> anyhow::Result<()> {
             print!("{}", rewritten);
             let _ = std::io::stdout().flush();
             Ok(())
-        }
+        },
         RewriteOutcome::Ask(rewritten) => {
             print!("{}", rewritten);
             let _ = std::io::stdout().flush();
             std::process::exit(3);
-        }
+        },
         RewriteOutcome::Deny => std::process::exit(2),
         RewriteOutcome::Passthrough => std::process::exit(1),
     }

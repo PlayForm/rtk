@@ -49,9 +49,7 @@ impl<T> ParseResult<T> {
 
     /// Check if parsing succeeded (Full or Degraded)
     #[allow(dead_code)]
-    pub fn is_ok(&self) -> bool {
-        !matches!(self, ParseResult::Passthrough(_))
-    }
+    pub fn is_ok(&self) -> bool { !matches!(self, ParseResult::Passthrough(_)) }
 
     /// Map the parsed data while preserving tier
     #[allow(dead_code)]
@@ -190,8 +188,8 @@ pub fn extract_json_object(input: &str) -> Option<&str> {
                     let end_pos = start_pos + i + 1; // +1 to include the `}`
                     return Some(&input[start_pos..end_pos]);
                 }
-            }
-            _ => {}
+            },
+            _ => {},
         }
     }
 

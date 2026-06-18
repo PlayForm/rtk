@@ -5,16 +5,18 @@
 //! capable of state-machine parsing (block collapse, continuation tracking,
 //! mode toggle) that TOML DSL cannot express.
 
-use crate::core::runner::{self, RunOptions};
-use crate::core::truncate::CAP_WARNINGS;
-use crate::core::utils::{resolved_command, strip_ansi};
-use anyhow::Result;
-use lazy_static::lazy_static;
-use regex::Regex;
 use std::collections::HashSet;
 use std::ffi::OsString;
 use std::path::Path;
 use std::process::Command;
+
+use anyhow::Result;
+use lazy_static::lazy_static;
+use regex::Regex;
+
+use crate::core::runner::{self, RunOptions};
+use crate::core::truncate::CAP_WARNINGS;
+use crate::core::utils::{resolved_command, strip_ansi};
 
 /// Cap on emitted failing test-class blocks and `[ERROR] Failures:` summary
 /// entries — test-failure cap class, same binding as pytest/rspec/rake/runner.
@@ -70,9 +72,7 @@ lazy_static! {
 /// **zero bytes**; a failing run emits only `[ERROR]`-prefixed lines plus the
 /// stack trace. The standard filters key off `[INFO]` markers and the footer
 /// guard, so they can't fire here — `filter_quiet` handles this case instead.
-fn is_quiet(args: &[String]) -> bool {
-    args.iter().any(|a| a == "-q" || a == "--quiet")
-}
+fn is_quiet(args: &[String]) -> bool { args.iter().any(|a| a == "-q" || a == "--quiet") }
 
 // ── Phase detection ─────────────────────────────────────────────────────────
 
@@ -154,8 +154,7 @@ fn is_boilerplate(line: &str) -> bool {
 /// Note: the `[ERROR]   Class.test:25 …` failures-summary entries (3-space
 /// indent, no `<<<` marker) do NOT match.
 fn is_per_test_subline(line: &str) -> bool {
-    line.starts_with("[ERROR] ")
-        && (line.contains("<<< FAILURE!") || line.contains("<<< ERROR!"))
+    line.starts_with("[ERROR] ") && (line.contains("<<< FAILURE!") || line.contains("<<< ERROR!"))
 }
 
 // ── English-footer guard ────────────────────────────────────────────────────
@@ -564,8 +563,8 @@ fn filter_surefire_with_cap(raw: &str, cap: usize) -> String {
                 }
                 keep_continuation = false;
                 continue;
-            }
-            SurefireStep::Passthrough => {}
+            },
+            SurefireStep::Passthrough => {},
         }
 
         if keep_continuation && (line.starts_with(' ') || line.starts_with('\t')) {
@@ -692,9 +691,7 @@ pub fn filter_compile(raw: &str) -> String {
 /// `[INFO] Running …` line is seen, switches back on `Tests run:` close.
 /// Outside any Surefire block, applies the unified keep-list (compile keepers
 /// + install/artifact lines).
-pub fn filter_package(raw: &str) -> String {
-    filter_package_with_cap(raw, MAX_MVN_FAILING_CLASSES)
-}
+pub fn filter_package(raw: &str) -> String { filter_package_with_cap(raw, MAX_MVN_FAILING_CLASSES) }
 
 fn filter_package_with_cap(raw: &str, cap: usize) -> String {
     let stripped = strip_ansi(raw);
@@ -728,8 +725,8 @@ fn filter_package_with_cap(raw: &str, cap: usize) -> String {
                 }
                 keep_continuation = false;
                 continue;
-            }
-            SurefireStep::Passthrough => {}
+            },
+            SurefireStep::Passthrough => {},
         }
 
         // Failures-summary cap (see filter_surefire_with_cap for details).
@@ -812,8 +809,7 @@ pub fn filter_quiet(raw: &str) -> String {
         if CLOSE.is_match(line) {
             out.push_str(line);
             out.push('\n');
-            failure_trail =
-                line.contains("<<< FAILURE!") || line.contains("<<< ERROR!");
+            failure_trail = line.contains("<<< FAILURE!") || line.contains("<<< ERROR!");
             continue;
         }
 
@@ -961,7 +957,7 @@ pub fn run(args: &[String], verbose: u8) -> Result<i32> {
         MvnPhase::Passthrough => {
             let osargs: Vec<OsString> = args.iter().map(OsString::from).collect();
             runner::run_passthrough(tool, &osargs, verbose)
-        }
+        },
     }
 }
 
@@ -969,13 +965,13 @@ pub fn run(args: &[String], verbose: u8) -> Result<i32> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use flate2::read::GzDecoder;
     use std::io::Read;
 
-    fn count_tokens(s: &str) -> usize {
-        s.split_whitespace().count()
-    }
+    use flate2::read::GzDecoder;
+
+    use super::*;
+
+    fn count_tokens(s: &str) -> usize { s.split_whitespace().count() }
 
     fn gunzip(bytes: &[u8]) -> String {
         let mut s = String::new();
@@ -1044,10 +1040,7 @@ mod tests {
     }
     #[test]
     fn phase_plugin_goal_passthrough() {
-        assert_eq!(
-            detect_phase(&s(["dependency:tree"])),
-            MvnPhase::Passthrough
-        );
+        assert_eq!(detect_phase(&s(["dependency:tree"])), MvnPhase::Passthrough);
     }
     #[test]
     fn phase_empty_passthrough() {
@@ -1110,11 +1103,7 @@ mod tests {
             "passing-test Running line dropped; got:\n{}",
             o
         );
-        assert!(
-            o.contains("BUILD SUCCESS"),
-            "footer preserved; got:\n{}",
-            o
-        );
+        assert!(o.contains("BUILD SUCCESS"), "footer preserved; got:\n{}", o);
         assert!(
             o.contains("Tests run: 977, Failures: 0"),
             "aggregate preserved; got:\n{}",
@@ -1160,11 +1149,7 @@ mod tests {
             "2.x ` - in ` close-line matched; passing block dropped; got:\n{}",
             o
         );
-        assert!(
-            o.contains("BUILD SUCCESS"),
-            "footer preserved; got:\n{}",
-            o
-        );
+        assert!(o.contains("BUILD SUCCESS"), "footer preserved; got:\n{}", o);
     }
 
     /// 3.x WARNING-prefixed close line (class with only skipped tests) must
@@ -1195,8 +1180,16 @@ mod tests {
                  \n\
                  [INFO] BUILD FAILURE\n";
         let o = filter_surefire(i);
-        assert!(o.contains("AssertionFailedError"), "exception preserved; got:\n{}", o);
-        assert!(o.contains("at x.Foo.bar"), "user frame preserved; got:\n{}", o);
+        assert!(
+            o.contains("AssertionFailedError"),
+            "exception preserved; got:\n{}",
+            o
+        );
+        assert!(
+            o.contains("at x.Foo.bar"),
+            "user frame preserved; got:\n{}",
+            o
+        );
         assert!(
             !o.contains("at org.junit."),
             "framework frame stripped in trail; got:\n{}",
@@ -1480,7 +1473,11 @@ mod tests {
     fn surefire_keeps_compile_continuation_on_test_phase() {
         let i = include_str!("../../../tests/fixtures/mvn_test_compile_fail_slice_raw.txt");
         let o = filter_surefire(i);
-        assert!(o.contains("cannot find symbol"), "ERROR line preserved; got:\n{}", o);
+        assert!(
+            o.contains("cannot find symbol"),
+            "ERROR line preserved; got:\n{}",
+            o
+        );
         assert!(
             o.contains("symbol:   variable bar"),
             "indented `symbol:` continuation preserved; got:\n{}",
@@ -1502,7 +1499,11 @@ mod tests {
     fn package_still_keeps_compile_error_continuation_after_refactor() {
         let i = include_str!("../../../tests/fixtures/mvn_compile_error_slice_raw.txt");
         let o = filter_package(i);
-        assert!(o.contains("cannot find symbol"), "ERROR line preserved; got:\n{}", o);
+        assert!(
+            o.contains("cannot find symbol"),
+            "ERROR line preserved; got:\n{}",
+            o
+        );
         assert!(
             o.contains("symbol:   variable bar"),
             "indented `symbol:` continuation preserved; got:\n{}",
@@ -1602,8 +1603,8 @@ mod tests {
 
     #[test]
     fn package_handles_crlf_line_endings() {
-        let i_lf = include_str!("../../../tests/fixtures/mvn_install_slice_raw.txt")
-            .replace("\r\n", "\n");
+        let i_lf =
+            include_str!("../../../tests/fixtures/mvn_install_slice_raw.txt").replace("\r\n", "\n");
         let o_lf = filter_package(&i_lf);
         let i_crlf = i_lf.replace('\n', "\r\n");
         let o_crlf = filter_package(&i_crlf);
@@ -1792,11 +1793,7 @@ mod tests {
             "second per-module SUCCESS row preserved; got:\n{}",
             o
         );
-        assert!(
-            o.contains("BUILD SUCCESS"),
-            "footer preserved; got:\n{}",
-            o
-        );
+        assert!(o.contains("BUILD SUCCESS"), "footer preserved; got:\n{}", o);
     }
 
     /// `mvn install` on a multi-module reactor build where one module fails
@@ -1833,7 +1830,11 @@ mod tests {
             "resume hint preserved (actionable signal); got:\n{}",
             o
         );
-        assert!(!o.contains("[Help 1]"), "help boilerplate stripped; got:\n{}", o);
+        assert!(
+            !o.contains("[Help 1]"),
+            "help boilerplate stripped; got:\n{}",
+            o
+        );
         assert!(
             !o.contains("Re-run Maven"),
             "re-run hint stripped; got:\n{}",
@@ -1930,7 +1931,9 @@ mod tests {
     #[test]
     #[ignore]
     fn print_savings_summary() {
-        let pf = gunzip(include_bytes!("../../../tests/fixtures/mvn_test_pass_full_raw.txt.gz"));
+        let pf = gunzip(include_bytes!(
+            "../../../tests/fixtures/mvn_test_pass_full_raw.txt.gz"
+        ));
         let pf_out = filter_surefire(&pf);
         let pf_in_tok = count_tokens(&pf);
         let pf_out_tok = count_tokens(&pf_out);
@@ -1940,7 +1943,9 @@ mod tests {
             pf_in_tok, pf_out_tok, pf_s
         );
 
-        let inst = gunzip(include_bytes!("../../../tests/fixtures/mvn_install_full_raw.txt.gz"));
+        let inst = gunzip(include_bytes!(
+            "../../../tests/fixtures/mvn_install_full_raw.txt.gz"
+        ));
         let inst_out = filter_package(&inst);
         let inst_in_tok = count_tokens(&inst);
         let inst_out_tok = count_tokens(&inst_out);
@@ -2107,6 +2112,3 @@ mod tests {
         );
     }
 }
-
-
-

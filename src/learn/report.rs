@@ -1,10 +1,12 @@
 //! Formats and persists correction suggestions for the user.
 
-use crate::learn::detector::CorrectionRule;
-use anyhow::Result;
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
+
+use anyhow::Result;
+
+use crate::learn::detector::CorrectionRule;
 
 pub fn format_console_report(
     rules: &[CorrectionRule],

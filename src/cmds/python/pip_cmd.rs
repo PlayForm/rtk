@@ -1,11 +1,12 @@
 //! Filters pip and uv package manager output.
 
+use anyhow::{Context, Result};
+use serde::Deserialize;
+
 use crate::core::stream::exec_capture;
 use crate::core::tracking;
 use crate::core::truncate::{CAP_INVENTORY, CAP_LIST};
 use crate::core::utils::{resolved_command, tool_exists};
-use anyhow::{Context, Result};
-use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 struct Package {
@@ -39,11 +40,11 @@ pub fn run(args: &[String], verbose: u8) -> Result<i32> {
         "install" | "uninstall" | "show" => {
             // Passthrough for write operations
             run_passthrough(base_cmd, args, verbose)?
-        }
+        },
         _ => {
             // Unknown subcommand: passthrough to pip/uv
             run_passthrough(base_cmd, args, verbose)?
-        }
+        },
     };
 
     timer.track(
@@ -73,8 +74,8 @@ fn run_list(base_cmd: &str, args: &[String], verbose: u8) -> Result<(String, Str
         eprintln!("Running: {} pip list --format=json", base_cmd);
     }
 
-    let result = exec_capture(&mut cmd)
-        .with_context(|| format!("Failed to run {} pip list", base_cmd))?;
+    let result =
+        exec_capture(&mut cmd).with_context(|| format!("Failed to run {} pip list", base_cmd))?;
 
     let raw = format!("{}\n{}", result.stdout, result.stderr);
 
@@ -144,7 +145,7 @@ fn filter_pip_list(output: &str) -> String {
         Ok(p) => p,
         Err(e) => {
             return format!("pip list (JSON parse failed: {})", e);
-        }
+        },
     };
 
     if packages.is_empty() {
@@ -193,7 +194,7 @@ fn filter_pip_outdated(output: &str) -> String {
         Ok(p) => p,
         Err(e) => {
             return format!("pip outdated (JSON parse failed: {})", e);
-        }
+        },
     };
 
     if packages.is_empty() {

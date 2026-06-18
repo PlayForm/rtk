@@ -1,14 +1,16 @@
 //! Filters Docker and kubectl output into compact summaries.
 
+use std::ffi::OsString;
+use std::process::Command;
+
+use anyhow::{Context, Result};
+use serde_json::Value;
+
 use crate::core::runner::{self, RunOptions};
 use crate::core::stream::exec_capture;
 use crate::core::tracking;
 use crate::core::truncate::{CAP_INVENTORY, CAP_LIST, CAP_WARNINGS};
 use crate::core::utils::resolved_command;
-use anyhow::{Context, Result};
-use serde_json::Value;
-use std::ffi::OsString;
-use std::process::Command;
 
 #[derive(Debug, Clone, Copy)]
 pub enum ContainerCmd {
@@ -46,7 +48,7 @@ where
             Err(e) => {
                 eprintln!("[rtk] kubectl: JSON parse failed: {}", e);
                 stdout.to_string()
-            }
+            },
         },
         RunOptions::stdout_only()
             .early_exit_on_failure()
@@ -174,7 +176,11 @@ fn docker_ps_all(_verbose: u8) -> Result<i32> {
         }
     }
     if truncated {
-        let full: String = running_lines.iter().chain(stopped_lines.iter()).cloned().collect();
+        let full: String = running_lines
+            .iter()
+            .chain(stopped_lines.iter())
+            .cloned()
+            .collect();
         if let Some(hint) = crate::core::tee::force_tee_hint(&full, "docker-ps-a") {
             rtk.push_str(&format!("{}\n", hint));
         }
@@ -294,7 +300,9 @@ fn docker_images(_verbose: u8) -> Result<i32> {
     }
     if image_lines.len() > MAX_IMAGES {
         rtk.push_str(&format!("  … +{} more\n", image_lines.len() - MAX_IMAGES));
-        if let Some(hint) = crate::core::tee::force_tee_tail_hint(&full_rtk, "docker-images", MAX_IMAGES + 2) {
+        if let Some(hint) =
+            crate::core::tee::force_tee_tail_hint(&full_rtk, "docker-images", MAX_IMAGES + 2)
+        {
             rtk.push_str(&format!("{}\n", hint));
         }
     }
@@ -362,11 +370,11 @@ fn format_kubectl_pods(json: &Value) -> String {
             "Pending" => {
                 pending += 1;
                 issues.push(format!("{}/{} Pending", ns, name));
-            }
+            },
             "Failed" | "Error" => {
                 failed += 1;
                 issues.push(format!("{}/{} {}", ns, name, phase));
-            }
+            },
             _ => {
                 if let Some(containers) = pod["status"]["containerStatuses"].as_array() {
                     for c in containers {
@@ -378,7 +386,7 @@ fn format_kubectl_pods(json: &Value) -> String {
                         }
                     }
                 }
-            }
+            },
         }
     }
 
@@ -406,9 +414,11 @@ fn format_kubectl_pods(json: &Value) -> String {
         if issues.len() > MAX_PODS_ISSUES {
             out.push_str(&format!("  … +{} more", issues.len() - MAX_PODS_ISSUES));
             let all_issues = issues.join("\n");
-            if let Some(hint) =
-                crate::core::tee::force_tee_tail_hint(&all_issues, "kubectl-pods", MAX_PODS_ISSUES + 1)
-            {
+            if let Some(hint) = crate::core::tee::force_tee_tail_hint(
+                &all_issues,
+                "kubectl-pods",
+                MAX_PODS_ISSUES + 1,
+            ) {
                 out.push_str(&format!(" {}", hint));
             }
         }
@@ -465,11 +475,16 @@ fn format_kubectl_services(json: &Value) -> String {
         out.push_str(&format!("{}\n", line));
     }
     if all_lines.len() > MAX_KUBECTL_SERVICES {
-        out.push_str(&format!("  … +{} more", all_lines.len() - MAX_KUBECTL_SERVICES));
+        out.push_str(&format!(
+            "  … +{} more",
+            all_lines.len() - MAX_KUBECTL_SERVICES
+        ));
         let all_text = all_lines.join("\n");
-        if let Some(hint) =
-            crate::core::tee::force_tee_tail_hint(&all_text, "kubectl-services", MAX_KUBECTL_SERVICES + 1)
-        {
+        if let Some(hint) = crate::core::tee::force_tee_tail_hint(
+            &all_text,
+            "kubectl-services",
+            MAX_KUBECTL_SERVICES + 1,
+        ) {
             out.push_str(&format!(" {}", hint));
         }
         out.push('\n');
@@ -542,7 +557,10 @@ pub fn format_compose_ps(raw: &str) -> String {
                     format!(" [{}]", compact)
                 }
             };
-            Some(format!("  {} ({}) {}{}", name, short_image, status, port_str))
+            Some(format!(
+                "  {} ({}) {}{}",
+                name, short_image, status, port_str
+            ))
         })
         .collect();
 
@@ -551,9 +569,14 @@ pub fn format_compose_ps(raw: &str) -> String {
         result.push('\n');
     }
     if all_formatted.len() > MAX_COMPOSE_SERVICES {
-        result.push_str(&format!("  … +{} more\n", all_formatted.len() - MAX_COMPOSE_SERVICES));
+        result.push_str(&format!(
+            "  … +{} more\n",
+            all_formatted.len() - MAX_COMPOSE_SERVICES
+        ));
         let all_text = all_formatted.join("\n");
-        if let Some(hint) = crate::core::tee::force_tee_tail_hint(&all_text, "compose-ps", MAX_COMPOSE_SERVICES + 1) {
+        if let Some(hint) =
+            crate::core::tee::force_tee_tail_hint(&all_text, "compose-ps", MAX_COMPOSE_SERVICES + 1)
+        {
             result.push_str(&format!("  {}\n", hint));
         }
     }
@@ -644,11 +667,7 @@ fn compact_ports(ports: &str) -> String {
     if port_nums.len() <= 3 {
         port_nums.join(", ")
     } else {
-        format!(
-            "{}, … +{}",
-            port_nums[..2].join(", "),
-            port_nums.len() - 2
-        )
+        format!("{}, … +{}", port_nums[..2].join(", "), port_nums.len() - 2)
     }
 }
 
@@ -693,8 +712,16 @@ pub fn run_compose_ps(all: bool, verbose: u8) -> Result<i32> {
 
     let rtk = format_compose_ps(&structured);
     println!("{}", rtk);
-    let label = if all { "docker compose ps -a" } else { "docker compose ps" };
-    let rtk_label = if all { "rtk docker compose ps -a" } else { "rtk docker compose ps" };
+    let label = if all {
+        "docker compose ps -a"
+    } else {
+        "docker compose ps"
+    };
+    let rtk_label = if all {
+        "rtk docker compose ps -a"
+    } else {
+        "rtk docker compose ps"
+    };
     timer.track(label, rtk_label, &raw, &rtk);
     Ok(0)
 }
@@ -933,7 +960,11 @@ api-1  | Connected to database";
     #[test]
     fn test_kubectl_get_target_pods_aliases() {
         for resource in ["po", "pod", "pods"] {
-            let args = vec![resource.to_string(), "-n".to_string(), "default".to_string()];
+            let args = vec![
+                resource.to_string(),
+                "-n".to_string(),
+                "default".to_string(),
+            ];
 
             assert_eq!(
                 kubectl_get_target(&args),

@@ -1,10 +1,12 @@
 //! Filters Prisma CLI output by stripping ASCII art and verbose decoration.
 
+use std::process::Command;
+
+use anyhow::{Context, Result};
+
 use crate::core::stream::exec_capture;
 use crate::core::tracking;
 use crate::core::utils::{resolved_command, tool_exists};
-use anyhow::{Context, Result};
-use std::process::Command;
 
 #[derive(Debug, Clone)]
 pub enum PrismaCommand {
@@ -89,15 +91,15 @@ fn run_migrate(subcommand: MigrateSubcommand, args: &[String], verbose: u8) -> R
                 cmd.arg("--name").arg(n);
             }
             "prisma migrate dev"
-        }
+        },
         MigrateSubcommand::Status => {
             cmd.arg("status");
             "prisma migrate status"
-        }
+        },
         MigrateSubcommand::Deploy => {
             cmd.arg("deploy");
             "prisma migrate deploy"
-        }
+        },
     };
 
     for arg in args {

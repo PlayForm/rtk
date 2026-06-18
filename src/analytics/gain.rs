@@ -1,15 +1,17 @@
 //! Shows users how many tokens RTK has saved them over time.
 
-use crate::core::display_helpers::{format_duration, print_period_table};
-use crate::core::tracking::{DayStats, MonthStats, Tracker, WeekStats};
-use crate::core::utils::format_tokens;
-use crate::hooks::hook_check;
+use std::io::IsTerminal;
+use std::path::PathBuf;
+
 use anyhow::{Context, Result};
 use chrono::Local;
 use colored::Colorize;
 use serde::Serialize;
-use std::io::IsTerminal;
-use std::path::PathBuf;
+
+use crate::core::display_helpers::{format_duration, print_period_table};
+use crate::core::tracking::{DayStats, MonthStats, Tracker, WeekStats};
+use crate::core::utils::format_tokens;
+use crate::hooks::hook_check;
 
 #[allow(clippy::too_many_arguments)]
 pub fn run(
@@ -58,7 +60,7 @@ pub fn run(
                 all,
                 project_scope.as_deref(), // added: pass project scope
             );
-        }
+        },
         "csv" => {
             return export_csv(
                 &tracker,
@@ -68,8 +70,8 @@ pub fn run(
                 all,
                 project_scope.as_deref(), // added: pass project scope
             );
-        }
-        _ => {} // Continue with text format
+        },
+        _ => {}, // Continue with text format
     }
 
     let summary = tracker
@@ -130,15 +132,15 @@ pub fn run(
                         .yellow()
                 );
                 eprintln!();
-            }
+            },
             hook_check::HookStatus::Outdated => {
                 eprintln!(
                     "{}",
                     "[warn] Hook outdated — run `rtk init -g` to update".yellow()
                 );
                 eprintln!();
-            }
-            hook_check::HookStatus::Ok => {}
+            },
+            hook_check::HookStatus::Ok => {},
         }
 
         // Lightweight RTK_DISABLED bypass check (best-effort, silent on failure)

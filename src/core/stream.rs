@@ -1,17 +1,15 @@
-use anyhow::{Context, Result};
 use std::io::{self, BufRead, BufReader, BufWriter, Write};
 use std::process::{Command, Stdio};
 use std::sync::mpsc;
 
+use anyhow::{Context, Result};
 #[cfg(test)]
 use regex::Regex;
 
 pub trait StreamFilter {
     fn feed_line(&mut self, line: &str) -> Option<String>;
     fn flush(&mut self) -> String;
-    fn on_exit(&mut self, _exit_code: i32, _raw: &str) -> Option<String> {
-        None
-    }
+    fn on_exit(&mut self, _exit_code: i32, _raw: &str) -> Option<String> { None }
 }
 
 pub trait BlockHandler {
@@ -76,9 +74,7 @@ impl<H: BlockHandler> StreamFilter for BlockStreamFilter<H> {
         }
     }
 
-    fn flush(&mut self) -> String {
-        self.emit_block().unwrap_or_default()
-    }
+    fn flush(&mut self) -> String { self.emit_block().unwrap_or_default() }
 
     fn on_exit(&mut self, exit_code: i32, raw: &str) -> Option<String> {
         self.handler.format_summary(exit_code, raw)
@@ -91,9 +87,7 @@ impl<H: BlockHandler> StreamFilter for BlockStreamFilter<H> {
 /// opt in to dropping noise via [`LineHandler::should_skip`] and may capture
 /// state for the final summary via [`LineHandler::observe_line`].
 pub trait LineHandler {
-    fn should_skip(&mut self, _line: &str) -> bool {
-        false
-    }
+    fn should_skip(&mut self, _line: &str) -> bool { false }
 
     fn observe_line(&mut self, _line: &str) {}
 
@@ -105,9 +99,7 @@ pub struct LineStreamFilter<H: LineHandler> {
 }
 
 impl<H: LineHandler> LineStreamFilter<H> {
-    pub fn new(handler: H) -> Self {
-        Self { handler }
-    }
+    pub fn new(handler: H) -> Self { Self { handler } }
 }
 
 impl<H: LineHandler> StreamFilter for LineStreamFilter<H> {
@@ -119,9 +111,7 @@ impl<H: LineHandler> StreamFilter for LineStreamFilter<H> {
         Some(format!("{}\n", line))
     }
 
-    fn flush(&mut self) -> String {
-        String::new()
-    }
+    fn flush(&mut self) -> String { String::new() }
 
     fn on_exit(&mut self, exit_code: i32, raw: &str) -> Option<String> {
         self.handler.format_summary(exit_code, raw)
@@ -222,9 +212,7 @@ pub struct StreamResult {
 
 impl StreamResult {
     #[cfg(test)]
-    pub fn success(&self) -> bool {
-        self.exit_code == 0
-    }
+    pub fn success(&self) -> bool { self.exit_code == 0 }
 }
 
 pub fn status_to_exit_code(status: std::process::ExitStatus) -> i32 {
@@ -253,10 +241,10 @@ pub fn run_streaming(
         match &stdin_mode {
             StdinMode::Inherit => {
                 cmd.stdin(Stdio::inherit());
-            }
+            },
             _ => {
                 cmd.stdin(Stdio::null());
-            }
+            },
         };
         cmd.stdout(Stdio::inherit());
         cmd.stderr(Stdio::inherit());
@@ -273,19 +261,17 @@ pub fn run_streaming(
     match &stdin_mode {
         StdinMode::Inherit => {
             cmd.stdin(Stdio::inherit());
-        }
+        },
         StdinMode::Filter(_) | StdinMode::Null => {
             cmd.stdin(Stdio::piped());
-        }
+        },
     }
     cmd.stdout(Stdio::piped());
     cmd.stderr(Stdio::piped());
 
     struct ChildGuard(std::process::Child);
     impl Drop for ChildGuard {
-        fn drop(&mut self) {
-            self.0.wait().ok();
-        }
+        fn drop(&mut self) { self.0.wait().ok(); }
     }
 
     let is_streaming = matches!(stdout_mode, FilterMode::Streaming(_));
@@ -313,11 +299,11 @@ pub fn run_streaming(
                     write!(writer, "{}", tail).ok();
                 }
             }))
-        }
+        },
         StdinMode::Null => {
             child.0.stdin.take();
             None
-        }
+        },
         StdinMode::Inherit => None,
     };
 
@@ -392,7 +378,7 @@ pub fn run_streaming(
                     match write!(dest, "{}", output) {
                         Err(e) if e.kind() == io::ErrorKind::BrokenPipe => break,
                         Err(e) => return Err(e.into()),
-                        Ok(_) => {}
+                        Ok(_) => {},
                     }
                 }
             }
@@ -404,9 +390,9 @@ pub fn run_streaming(
                 &mut out
             };
             match write!(flush_dest, "{}", tail) {
-                Err(e) if e.kind() == io::ErrorKind::BrokenPipe => {}
+                Err(e) if e.kind() == io::ErrorKind::BrokenPipe => {},
                 Err(e) => return Err(e.into()),
-                Ok(_) => {}
+                Ok(_) => {},
             }
             saved_filter = Some(filter);
         }
@@ -455,11 +441,11 @@ pub fn run_streaming(
                         raw_stdout.clone()
                     });
                     match write!(out, "{}", filtered) {
-                        Err(e) if e.kind() == io::ErrorKind::BrokenPipe => {}
+                        Err(e) if e.kind() == io::ErrorKind::BrokenPipe => {},
                         Err(e) => return Err(e.into()),
-                        Ok(_) => {}
+                        Ok(_) => {},
                     }
-                }
+                },
                 FilterMode::CaptureOnly => {
                     for line in BufReader::new(stdout).lines().map_while(Result::ok) {
                         if raw_stdout.len() + line.len() < RAW_CAP {
@@ -473,7 +459,7 @@ pub fn run_streaming(
                         }
                     }
                     filtered = raw_stdout.clone();
-                }
+                },
             }
         }
 
@@ -499,9 +485,9 @@ pub fn run_streaming(
                 Box::new(io::stdout().lock())
             };
             match write!(dest, "{}", post) {
-                Err(e) if e.kind() == io::ErrorKind::BrokenPipe => {}
+                Err(e) if e.kind() == io::ErrorKind::BrokenPipe => {},
                 Err(e) => return Err(e.into()),
-                Ok(_) => {}
+                Ok(_) => {},
             }
         }
     }
@@ -522,13 +508,9 @@ pub struct CaptureResult {
 }
 
 impl CaptureResult {
-    pub fn success(&self) -> bool {
-        self.exit_code == 0
-    }
+    pub fn success(&self) -> bool { self.exit_code == 0 }
 
-    pub fn combined(&self) -> String {
-        format!("{}{}", self.stdout, self.stderr)
-    }
+    pub fn combined(&self) -> String { format!("{}{}", self.stdout, self.stderr) }
 }
 
 pub fn exec_capture(cmd: &mut Command) -> Result<CaptureResult> {
@@ -543,27 +525,22 @@ pub fn exec_capture(cmd: &mut Command) -> Result<CaptureResult> {
 
 #[cfg(test)]
 pub(crate) mod tests {
-    use super::*;
     use std::process::Command;
+
+    use super::*;
 
     struct LineFilter<F: FnMut(&str) -> Option<String>> {
         f: F,
     }
 
     impl<F: FnMut(&str) -> Option<String>> LineFilter<F> {
-        pub fn new(f: F) -> Self {
-            Self { f }
-        }
+        pub fn new(f: F) -> Self { Self { f } }
     }
 
     impl<F: FnMut(&str) -> Option<String>> StreamFilter for LineFilter<F> {
-        fn feed_line(&mut self, line: &str) -> Option<String> {
-            (self.f)(line)
-        }
+        fn feed_line(&mut self, line: &str) -> Option<String> { (self.f)(line) }
 
-        fn flush(&mut self) -> String {
-            String::new()
-        }
+        fn flush(&mut self) -> String { String::new() }
     }
 
     #[test]
@@ -858,12 +835,8 @@ pub(crate) mod tests {
     struct TestHandler;
 
     impl BlockHandler for TestHandler {
-        fn should_skip(&mut self, line: &str) -> bool {
-            line.starts_with("SKIP")
-        }
-        fn is_block_start(&mut self, line: &str) -> bool {
-            line.starts_with("ERROR")
-        }
+        fn should_skip(&mut self, line: &str) -> bool { line.starts_with("SKIP") }
+        fn is_block_start(&mut self, line: &str) -> bool { line.starts_with("ERROR") }
         fn is_block_continuation(&mut self, line: &str, _block: &[String]) -> bool {
             line.starts_with("  ")
         }
@@ -981,15 +954,11 @@ pub(crate) mod tests {
                     || trimmed.starts_with("Downloading")
                     || trimmed.starts_with("Finished")
             }
-            fn is_block_start(&mut self, line: &str) -> bool {
-                line.starts_with("error")
-            }
+            fn is_block_start(&mut self, line: &str) -> bool { line.starts_with("error") }
             fn is_block_continuation(&mut self, line: &str, _block: &[String]) -> bool {
                 line.starts_with(' ')
             }
-            fn format_summary(&self, _: i32, _: &str) -> Option<String> {
-                None
-            }
+            fn format_summary(&self, _: i32, _: &str) -> Option<String> { None }
         }
 
         let filter = BlockStreamFilter::new(CargoLikeHandler);
@@ -1036,9 +1005,7 @@ pub(crate) mod tests {
             self.skip_prefixes.iter().any(|p| line.starts_with(p))
         }
 
-        fn observe_line(&mut self, line: &str) {
-            self.observed.push(line.to_string());
-        }
+        fn observe_line(&mut self, line: &str) { self.observed.push(line.to_string()); }
 
         fn format_summary(&self, exit_code: i32, _raw: &str) -> Option<String> {
             Some(format!(
@@ -1068,9 +1035,7 @@ pub(crate) mod tests {
     fn test_line_filter_defaults_keep_all() {
         struct DefaultHandler;
         impl LineHandler for DefaultHandler {
-            fn format_summary(&self, _: i32, _: &str) -> Option<String> {
-                None
-            }
+            fn format_summary(&self, _: i32, _: &str) -> Option<String> { None }
         }
         let mut f = LineStreamFilter::new(DefaultHandler);
         let result = run_line_filter(&mut f, "a\nb\nc\n", 0);

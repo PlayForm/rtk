@@ -3,15 +3,17 @@
 //! Provides token-optimized alternatives to verbose `gh` commands.
 //! Focuses on extracting essential information from JSON outputs.
 
-use crate::core::runner::{self, RunOptions};
-use crate::core::truncate::CAP_LIST;
-use crate::core::utils::{ok_confirmation, resolved_command, truncate};
-use crate::git;
+use std::process::Command;
+
 use anyhow::Result;
 use lazy_static::lazy_static;
 use regex::Regex;
 use serde_json::Value;
-use std::process::Command;
+
+use crate::core::runner::{self, RunOptions};
+use crate::core::truncate::CAP_LIST;
+use crate::core::utils::{ok_confirmation, resolved_command, truncate};
+use crate::git;
 
 lazy_static! {
     static ref HTML_COMMENT_RE: Regex = Regex::new(r"(?s)<!--.*?-->").unwrap();
@@ -78,19 +80,19 @@ fn filter_markdown_body(body: &str) -> String {
                             .unwrap_or(remaining.len());
                         result.push_str(&remaining[end..after_close]);
                         remaining = &remaining[after_close..];
-                    }
+                    },
                     None => {
                         // Unclosed code block — preserve everything
                         result.push_str(&remaining[start..]);
                         remaining = "";
-                    }
+                    },
                 }
-            }
+            },
             None => {
                 // No more code blocks, filter the rest
                 result.push_str(&filter_markdown_segment(remaining));
                 break;
-            }
+            },
         }
     }
 
@@ -109,9 +111,7 @@ fn filter_markdown_segment(text: &str) -> String {
 }
 
 /// Check if args contain --json flag (user wants specific JSON fields, not RTK filtering)
-fn has_json_flag(args: &[String]) -> bool {
-    args.iter().any(|a| a == "--json")
-}
+fn has_json_flag(args: &[String]) -> bool { args.iter().any(|a| a == "--json") }
 
 /// Extract a positional identifier (PR/issue number) from args, returning it
 /// separately from the remaining extra flags (like -R, --repo, etc.).
@@ -205,7 +205,7 @@ pub fn run(subcommand: &str, args: &[String], verbose: u8, ultra_compact: bool) 
         _ => {
             // Unknown subcommand, pass through
             run_passthrough("gh", subcommand, args)
-        }
+        },
     }
 }
 
@@ -268,7 +268,13 @@ fn format_pr_list(json: &Value, ultra_compact: bool) -> String {
             let state = pr["state"].as_str().unwrap_or("???");
             let author = pr["author"]["login"].as_str().unwrap_or("???");
             let icon = state_icon(state, ultra_compact);
-            format!("  {} #{} {} ({})", icon, number, truncate(title, 60), author)
+            format!(
+                "  {} #{} {} ({})",
+                icon,
+                number,
+                truncate(title, 60),
+                author
+            )
         })
         .collect();
     const MAX_LIST: usize = CAP_LIST;
@@ -278,7 +284,8 @@ fn format_pr_list(json: &Value, ultra_compact: bool) -> String {
     if all_lines.len() > MAX_LIST {
         out.push_str(&format!("  … +{} more\n", all_lines.len() - MAX_LIST));
         let all_text = all_lines.join("\n");
-        if let Some(hint) = crate::core::tee::force_tee_tail_hint(&all_text, "gh-prs", MAX_LIST + 1) {
+        if let Some(hint) = crate::core::tee::force_tee_tail_hint(&all_text, "gh-prs", MAX_LIST + 1)
+        {
             out.push_str(&format!("  {}\n", hint));
         }
     }
@@ -324,9 +331,7 @@ fn should_passthrough_pr_status(args: &[String]) -> bool {
     })
 }
 
-fn pr_status_json_fields() -> &'static str {
-    "number,title,reviewDecision,statusCheckRollup"
-}
+fn pr_status_json_fields() -> &'static str { "number,title,reviewDecision,statusCheckRollup" }
 
 fn view_pr(args: &[String], _verbose: u8, ultra_compact: bool) -> Result<i32> {
     // `gh pr view` without an identifier defaults to the PR for the current branch.
@@ -621,7 +626,11 @@ fn format_issue_list(json: &Value, ultra_compact: bool) -> String {
             let title = issue["title"].as_str().unwrap_or("???");
             let state = issue["state"].as_str().unwrap_or("???");
             let icon = if ultra_compact {
-                if state == "OPEN" { "O" } else { "C" }
+                if state == "OPEN" {
+                    "O"
+                } else {
+                    "C"
+                }
             } else if state == "OPEN" {
                 "[open]"
             } else {
@@ -637,7 +646,9 @@ fn format_issue_list(json: &Value, ultra_compact: bool) -> String {
     if all_lines.len() > MAX_LIST {
         out.push_str(&format!("  … +{} more\n", all_lines.len() - MAX_LIST));
         let all_text = all_lines.join("\n");
-        if let Some(hint) = crate::core::tee::force_tee_tail_hint(&all_text, "gh-issues", MAX_LIST + 1) {
+        if let Some(hint) =
+            crate::core::tee::force_tee_tail_hint(&all_text, "gh-issues", MAX_LIST + 1)
+        {
             out.push_str(&format!("  {}\n", hint));
         }
     }
@@ -1529,9 +1540,7 @@ ___
 
         let result = filter_markdown_body(input);
 
-        fn count_tokens(text: &str) -> usize {
-            text.split_whitespace().count()
-        }
+        fn count_tokens(text: &str) -> usize { text.split_whitespace().count() }
 
         let input_tokens = count_tokens(input);
         let output_tokens = count_tokens(&result);

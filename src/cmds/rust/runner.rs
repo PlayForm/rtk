@@ -1,11 +1,13 @@
 //! Runs arbitrary commands and captures only stderr or test failures.
 
-use crate::core::stream::StreamFilter;
-use crate::core::truncate::{CAP_LIST, CAP_WARNINGS};
+use std::process::Command;
+
 use anyhow::Result;
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::process::Command;
+
+use crate::core::stream::StreamFilter;
+use crate::core::truncate::{CAP_LIST, CAP_WARNINGS};
 
 const MAX_RUNNER_FAILURES: usize = CAP_WARNINGS;
 const MAX_RUNNER_LINES: usize = CAP_LIST;
@@ -81,9 +83,7 @@ impl StreamFilter for ErrorStreamFilter {
         }
     }
 
-    fn flush(&mut self) -> String {
-        String::new()
-    }
+    fn flush(&mut self) -> String { String::new() }
 
     fn on_exit(&mut self, exit_code: i32, raw: &str) -> Option<String> {
         if self.emitted_any {

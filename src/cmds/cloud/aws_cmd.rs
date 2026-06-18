@@ -3,6 +3,11 @@
 //! Replaces verbose `--output table`/`text` with JSON, then compresses.
 //! Specialized filters for high-frequency commands (STS, S3, EC2, ECS, RDS, CloudFormation).
 
+use anyhow::{Context, Result};
+use lazy_static::lazy_static;
+use regex::Regex;
+use serde_json::Value;
+
 use crate::core::tee::force_tee_hint;
 use crate::core::tracking;
 use crate::core::truncate::{CAP_INVENTORY, CAP_LIST};
@@ -11,10 +16,6 @@ use crate::core::utils::{
     resolved_command, shorten_arn, truncate_iso_date,
 };
 use crate::json_cmd;
-use anyhow::{Context, Result};
-use lazy_static::lazy_static;
-use regex::Regex;
-use serde_json::Value;
 
 const MAX_ITEMS: usize = CAP_LIST;
 const JSON_COMPRESS_DEPTH: usize = 4;
@@ -104,13 +105,13 @@ pub fn run(subcommand: &str, args: &[String], verbose: u8) -> Result<i32> {
                 verbose,
                 filter_cfn_events,
             )
-        }
+        },
         "logs"
             if !args.is_empty()
                 && (args[0] == "get-log-events" || args[0] == "filter-log-events") =>
         {
             run_aws_filtered(&["logs", &args[0]], &args[1..], verbose, filter_logs_events)
-        }
+        },
         "lambda" if !args.is_empty() && args[0] == "list-functions" => run_aws_filtered(
             &["lambda", "list-functions"],
             &args[1..],
@@ -142,7 +143,7 @@ pub fn run(subcommand: &str, args: &[String], verbose: u8) -> Result<i32> {
                 verbose,
                 filter_dynamodb_items,
             )
-        }
+        },
         "ecs" if !args.is_empty() && args[0] == "describe-tasks" => run_aws_filtered(
             &["ecs", "describe-tasks"],
             &args[1..],
@@ -187,7 +188,7 @@ pub fn run(subcommand: &str, args: &[String], verbose: u8) -> Result<i32> {
         ),
         "s3" if !args.is_empty() && (args[0] == "sync" || args[0] == "cp") => {
             run_s3_transfer(&args[0], &args[1..], verbose)
-        }
+        },
         "secretsmanager" if !args.is_empty() && args[0] == "get-secret-value" => run_aws_filtered(
             &["secretsmanager", "get-secret-value"],
             &args[1..],
@@ -260,12 +261,12 @@ fn run_generic(subcommand: &str, args: &[String], verbose: u8, full_sub: &str) -
         Ok(compact) => {
             println!("{}", compact);
             compact
-        }
+        },
         Err(_) => {
             // Fallback: print raw (maybe not JSON)
             print!("{}", raw);
             raw.clone()
-        }
+        },
     };
 
     timer.track(
@@ -741,7 +742,7 @@ fn filter_logs_events(json_str: &str) -> Option<FilterResult> {
                 // Convert days to Y-M-D (simplified: good through 2099)
                 let (y, mo, d) = days_to_ymd(days);
                 format!("{:04}-{:02}-{:02} {:02}:{:02}:{:02}", y, mo, d, h, m, s)
-            }
+            },
             _ => "??:??:??".to_string(),
         };
 
@@ -1044,7 +1045,7 @@ fn unwrap_dynamodb_value(val: &Value, depth: usize) -> Value {
                             return Value::String(s.to_string());
                         }
                         return inner.clone();
-                    }
+                    },
                     "BOOL" => return inner.clone(),
                     "NULL" => return Value::Null,
                     "L" => {
@@ -1055,7 +1056,7 @@ fn unwrap_dynamodb_value(val: &Value, depth: usize) -> Value {
                                     .collect(),
                             );
                         }
-                    }
+                    },
                     "M" => {
                         if let Some(map) = inner.as_object() {
                             let unwrapped: serde_json::Map<String, Value> = map
@@ -1064,7 +1065,7 @@ fn unwrap_dynamodb_value(val: &Value, depth: usize) -> Value {
                                 .collect();
                             return Value::Object(unwrapped);
                         }
-                    }
+                    },
                     "SS" => return inner.clone(),
                     "NS" => {
                         // Parse NS set: try i64 first, then f64
@@ -1085,9 +1086,9 @@ fn unwrap_dynamodb_value(val: &Value, depth: usize) -> Value {
                             return Value::Array(nums);
                         }
                         return inner.clone();
-                    }
+                    },
                     "BS" => return inner.clone(),
-                    _ => {}
+                    _ => {},
                 }
             }
         }
@@ -1466,7 +1467,7 @@ fn filter_s3_transfer(output: &str) -> FilterResult {
                 Some("delete") => deleted += 1,
                 Some("copy") => copied += 1,
                 Some("move") => moved += 1,
-                _ => {}
+                _ => {},
             }
         } else if line.contains("error") || line.contains("failed") {
             errors.push(line.to_string());
@@ -2755,9 +2756,8 @@ upload: file10.txt to s3://bucket/file10.txt
     // type names. Calls the primitive used at aws_cmd.rs run_generic line 259.
     #[test]
     fn test_aws_unsupported_subcommand_json_preserves_values() {
-        let fixture = include_str!(
-            "../../../tests/fixtures/aws_backup_describe_global_settings.json"
-        );
+        let fixture =
+            include_str!("../../../tests/fixtures/aws_backup_describe_global_settings.json");
         let output = json_cmd::filter_json_compact(fixture, JSON_COMPRESS_DEPTH)
             .expect("filter_json_compact must not error on valid AWS JSON");
 

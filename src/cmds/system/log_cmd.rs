@@ -1,14 +1,16 @@
 //! Deduplicates repeated log lines and shows counts instead.
 
-use crate::core::tracking;
-use crate::core::truncate::{reduced, CAP_WARNINGS};
-use anyhow::Result;
-use lazy_static::lazy_static;
-use regex::Regex;
 use std::collections::HashMap;
 use std::fs;
 use std::io::{self, BufRead};
 use std::path::Path;
+
+use anyhow::Result;
+use lazy_static::lazy_static;
+use regex::Regex;
+
+use crate::core::tracking;
+use crate::core::truncate::{reduced, CAP_WARNINGS};
 
 lazy_static! {
     static ref TIMESTAMP_RE: Regex =
@@ -61,9 +63,7 @@ pub fn run_stdin(_verbose: u8) -> Result<()> {
 }
 
 /// For use by other modules
-pub fn run_stdin_str(content: &str) -> String {
-    analyze_logs(content)
-}
+pub fn run_stdin_str(content: &str) -> String { analyze_logs(content) }
 
 fn analyze_logs(content: &str) -> String {
     let mut result = Vec::new();
@@ -258,8 +258,14 @@ mod tests {
                     2024-01-01 10:00:03 SEVERE: data corruption detected\n\
                     2024-01-01 10:00:04 notice: config reloaded\n";
         let result = analyze_logs(logs);
-        assert!(result.contains("ERRORS"), "critical/alert/emerg/severe should count as errors");
-        assert!(result.contains("WARNINGS"), "notice should count as warning");
+        assert!(
+            result.contains("ERRORS"),
+            "critical/alert/emerg/severe should count as errors"
+        );
+        assert!(
+            result.contains("WARNINGS"),
+            "notice should count as warning"
+        );
     }
 
     #[test]

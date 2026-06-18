@@ -1,7 +1,8 @@
+use anyhow::{Context, Result};
+
 use crate::core::stream::exec_capture;
 use crate::core::tracking;
 use crate::core::utils::resolved_command;
-use anyhow::{Context, Result};
 
 /// Compact wget - strips progress bars, shows only result
 pub fn run(url: &str, args: &[String], verbose: u8) -> Result<i32> {
@@ -100,7 +101,12 @@ pub fn run_stdout(url: &str, args: &[String], verbose: u8) -> Result<i32> {
         let error = parse_error(&result.stderr, "");
         let msg = format!("{} FAILED: {}", compact_url(url), error);
         println!("{}", msg);
-        timer.track(&format!("wget -O - {}", url), "rtk wget -o", &result.stderr, &msg);
+        timer.track(
+            &format!("wget -O - {}", url),
+            "rtk wget -o",
+            &result.stderr,
+            &msg,
+        );
         return Ok(result.exit_code);
     }
 
@@ -261,15 +267,24 @@ mod tests {
 
     #[test]
     fn test_compact_url_strips_protocol() {
-        assert_eq!(compact_url("https://example.com/file.zip"), "example.com/file.zip");
-        assert_eq!(compact_url("http://example.com/file.zip"), "example.com/file.zip");
+        assert_eq!(
+            compact_url("https://example.com/file.zip"),
+            "example.com/file.zip"
+        );
+        assert_eq!(
+            compact_url("http://example.com/file.zip"),
+            "example.com/file.zip"
+        );
     }
 
     #[test]
     fn test_compact_url_truncates_long_url() {
         let long = "https://example.com/very/long/path/that/exceeds/fifty/characters/file.zip";
         let result = compact_url(long);
-        assert!(result.contains("..."), "Long URL should be truncated with ...");
+        assert!(
+            result.contains("..."),
+            "Long URL should be truncated with ..."
+        );
         assert!(result.len() < long.len());
     }
 

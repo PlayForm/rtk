@@ -1,5 +1,15 @@
 //! Filters dotnet CLI output — build, test, and format results.
 
+use std::ffi::OsString;
+use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::{SystemTime, UNIX_EPOCH};
+
+use anyhow::{Context, Result};
+use quick_xml::events::Event;
+use quick_xml::Reader;
+use serde_json::Value;
+
 use crate::binlog;
 use crate::core::stream::exec_capture;
 use crate::core::tracking;
@@ -7,14 +17,6 @@ use crate::core::truncate::{CAP_ERRORS, CAP_LIST, CAP_WARNINGS};
 use crate::core::utils::{resolved_command, truncate};
 use crate::dotnet_format_report;
 use crate::dotnet_trx;
-use anyhow::{Context, Result};
-use quick_xml::events::Event;
-use quick_xml::Reader;
-use serde_json::Value;
-use std::ffi::OsString;
-use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicU64, Ordering};
-use std::time::{SystemTime, UNIX_EPOCH};
 
 const DOTNET_CLI_UI_LANGUAGE: &str = "DOTNET_CLI_UI_LANGUAGE";
 const DOTNET_CLI_UI_LANGUAGE_VALUE: &str = "en-US";
@@ -152,7 +154,7 @@ fn run_dotnet_with_binlog(subcommand: &str, args: &[String], verbose: u8) -> Res
                 normalize_build_summary(binlog::parse_build_from_text(&raw), command_success);
             let summary = merge_build_summaries(binlog_summary, raw_summary);
             format_build_output(&summary, &binlog_path)
-        }
+        },
         "test" => {
             // First try to parse from binlog/console output
             let parsed_summary = if should_expect_binlog && binlog_path.exists() {
@@ -187,7 +189,7 @@ fn run_dotnet_with_binlog(subcommand: &str, args: &[String], verbose: u8) -> Res
                 &test_build_summary.warnings,
                 &binlog_path,
             )
-        }
+        },
         "restore" => {
             let binlog_summary = if should_expect_binlog && binlog_path.exists() {
                 normalize_restore_summary(
@@ -204,7 +206,7 @@ fn run_dotnet_with_binlog(subcommand: &str, args: &[String], verbose: u8) -> Res
             let (raw_errors, raw_warnings) = binlog::parse_restore_issues_from_text(&raw);
 
             format_restore_output(&summary, &raw_errors, &raw_warnings, &binlog_path)
-        }
+        },
         _ => raw.clone(),
     };
 
@@ -393,7 +395,10 @@ fn format_dotnet_format_output(
     }
 
     if changed_count > MAX_FORMAT_FILES {
-        output.push_str(&format!("\n… +{} more files", changed_count - MAX_FORMAT_FILES));
+        output.push_str(&format!(
+            "\n… +{} more files",
+            changed_count - MAX_FORMAT_FILES
+        ));
         let all_files = summary
             .files_with_changes
             .iter()
@@ -518,7 +523,7 @@ fn build_effective_dotnet_args(
                     }
                 }
                 effective.extend(args.iter().cloned());
-            }
+            },
             TestRunnerMode::MtpNative => {
                 // In .NET 10 native MTP mode, --report-trx is a direct dotnet test flag.
                 // Modern MTP frameworks (TUnit 1.19.74+, MSTest, xUnit with MTP runner)
@@ -527,7 +532,7 @@ fn build_effective_dotnet_args(
                     effective.push("--report-trx".to_string());
                 }
                 effective.extend(args.iter().cloned());
-            }
+            },
             TestRunnerMode::MtpVsTestBridge => {
                 // In VsTestBridge mode (supported on .NET 9 SDK and earlier), --report-trx
                 // goes after the -- separator so it reaches the MTP runtime.
@@ -536,7 +541,7 @@ fn build_effective_dotnet_args(
                 } else {
                     effective.extend(args.iter().cloned());
                 }
-            }
+            },
         }
     } else {
         effective.extend(args.iter().cloned());
@@ -609,18 +614,18 @@ fn scan_mtp_kind_in_file(path: &Path) -> MtpProjectKind {
                         | b"usetestingplatformrunner"
                         | b"testingplatformdotnettestsupport"
                 );
-            }
+            },
             Ok(Event::Text(e)) if inside_mtp_element => {
                 if let Ok(text) = e.unescape() {
                     if text.trim().eq_ignore_ascii_case("true") {
                         return MtpProjectKind::VsTestBridge;
                     }
                 }
-            }
+            },
             Ok(Event::End(_)) => inside_mtp_element = false,
             Ok(Event::Eof) => break,
             Err(_) => break,
-            _ => {}
+            _ => {},
         }
         buf.clear();
     }
@@ -1213,7 +1218,12 @@ fn format_test_output(
 
     // Status line emitted last; see format_build_output (issue #1574).
     // Warnings before errors: errors survive `| tail -N` immediately above the verdict.
-    [failed_tests_section, warnings_section, errors_section, header]
+    [
+        failed_tests_section,
+        warnings_section,
+        errors_section,
+        header,
+    ]
     .into_iter()
     .filter(|s| !s.is_empty())
     .collect::<Vec<_>>()
@@ -1305,10 +1315,11 @@ fn format_restore_output(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::dotnet_format_report;
     use std::fs;
     use std::time::Duration;
+
+    use super::*;
+    use crate::dotnet_format_report;
 
     fn build_dotnet_args_for_test(
         subcommand: &str,

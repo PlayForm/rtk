@@ -1,13 +1,15 @@
 //! Filters directory listings into a compact tree format.
 
+use std::io::IsTerminal;
+
+use anyhow::Result;
+use lazy_static::lazy_static;
+use regex::Regex;
+
 use super::constants::NOISE_DIRS;
 use crate::core::runner::{self, RunOptions};
 use crate::core::truncate::{reduced, CAP_WARNINGS};
 use crate::core::utils::resolved_command;
-use anyhow::Result;
-use lazy_static::lazy_static;
-use regex::Regex;
-use std::io::IsTerminal;
 
 lazy_static! {
     /// Matches the date+time portion in `ls -la` output, which serves as a
@@ -185,9 +187,7 @@ fn parse_ls_line(line: &str) -> Option<(char, String, u64, String)> {
 /// entries for "." (the directory itself) and ".." (its parent). These entries
 /// always appear in `ls -la` output and are skipped during parsing since they
 /// carry no meaningful content for token reduction.
-fn is_dotdir(line: &str) -> bool {
-    line.trim().ends_with('.') || line.trim().ends_with("..")
-}
+fn is_dotdir(line: &str) -> bool { line.trim().ends_with('.') || line.trim().ends_with("..") }
 
 /// Convert an `ls`-style permission string (e.g. `-rw-r--r--`, `drwxr-xr-x`,
 /// `-rwsr-xr-t`) into octal notation (e.g. `644`, `755`, `4755`).

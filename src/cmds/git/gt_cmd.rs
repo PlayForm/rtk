@@ -1,13 +1,15 @@
 //! Filters Graphite (gt) CLI output for stacking workflows.
 
+use std::ffi::OsString;
+
+use anyhow::{Context, Result};
+use lazy_static::lazy_static;
+use regex::Regex;
+
 use crate::core::stream::exec_capture;
 use crate::core::tracking;
 use crate::core::truncate::{reduced, CAP_LIST};
 use crate::core::utils::{ok_confirmation, resolved_command, strip_ansi, truncate};
-use anyhow::{Context, Result};
-use lazy_static::lazy_static;
-use regex::Regex;
-use std::ffi::OsString;
 
 lazy_static! {
     static ref EMAIL_RE: Regex =
@@ -80,9 +82,7 @@ fn run_gt_filtered(
     Ok(cmd_output.exit_code)
 }
 
-fn filter_identity(input: &str) -> String {
-    input.to_string()
-}
+fn filter_identity(input: &str) -> String { input.to_string() }
 
 pub fn run_log(args: &[String], verbose: u8) -> Result<i32> {
     match args.first().map(|s| s.as_str()) {
@@ -157,7 +157,7 @@ pub fn run_other(args: &[OsString], verbose: u8) -> Result<i32> {
                 verbose,
                 &[],
             )
-        }
+        },
         "worktree" => crate::git::run(crate::git::GitCommand::Worktree, &rest, None, verbose, &[]),
         _ => passthrough_gt(&subcommand, &rest, verbose),
     }
@@ -390,9 +390,7 @@ fn extract_branch_name(line: &str) -> String {
 mod tests {
     use super::*;
 
-    fn count_tokens(text: &str) -> usize {
-        text.split_whitespace().count()
-    }
+    fn count_tokens(text: &str) -> usize { text.split_whitespace().count() }
 
     #[test]
     fn test_filter_gt_log_exact_format() {

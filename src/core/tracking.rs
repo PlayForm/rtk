@@ -29,13 +29,14 @@
 //!
 //! See [docs/tracking.md](../docs/tracking.md) for full documentation.
 
+use std::ffi::OsString;
+use std::path::PathBuf;
+use std::time::Instant;
+
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
 use rusqlite::{params, Connection};
 use serde::Serialize;
-use std::ffi::OsString;
-use std::path::PathBuf;
-use std::time::Instant;
 
 // ── Project path helpers ── // added: project-scoped tracking support
 
@@ -1111,7 +1112,7 @@ impl Tracker {
                     .unwrap_or_else(|_| chrono::Utc::now());
                 let days = (chrono::Utc::now() - first).num_days();
                 Ok(days.max(0))
-            }
+            },
             None => Ok(0),
         }
     }

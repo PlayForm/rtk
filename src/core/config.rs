@@ -1,9 +1,11 @@
 //! Reads user settings from config.toml.
 
-use super::constants::{CONFIG_TOML, DEFAULT_HISTORY_DAYS, RTK_DATA_DIR};
+use std::path::PathBuf;
+
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+
+use super::constants::{CONFIG_TOML, DEFAULT_HISTORY_DAYS, RTK_DATA_DIR};
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Config {
@@ -146,9 +148,7 @@ impl Default for LimitsConfig {
 }
 
 /// Get limits config. Falls back to defaults if config can't be loaded.
-pub fn limits() -> LimitsConfig {
-    Config::load().map(|c| c.limits).unwrap_or_default()
-}
+pub fn limits() -> LimitsConfig { Config::load().map(|c| c.limits).unwrap_or_default() }
 
 impl Config {
     pub fn load() -> Result<Self> {

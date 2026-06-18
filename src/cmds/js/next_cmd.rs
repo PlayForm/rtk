@@ -1,10 +1,11 @@
 //! Filters Next.js build output down to route metrics and bundle sizes.
 
+use anyhow::Result;
+use regex::Regex;
+
 use crate::core::runner;
 use crate::core::truncate::CAP_WARNINGS;
 use crate::core::utils::{resolved_command, strip_ansi, tool_exists, truncate};
-use anyhow::Result;
-use regex::Regex;
 
 pub fn run(args: &[String], verbose: u8) -> Result<i32> {
     // Try next directly first, fallback to npx if not found

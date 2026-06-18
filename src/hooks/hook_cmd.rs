@@ -3,12 +3,13 @@
 //! Uses `writeln!(stdout, ...)` instead of `println!` — accidental stdout/stderr
 //! corrupts the JSON protocol (Claude Code bug #4669 silently disables the hook).
 
-use super::constants::PRE_TOOL_USE_KEY;
-use super::permissions::{self, PermissionVerdict};
-use anyhow::{Context, Result};
-use serde_json::{json, Value};
 use std::io::{self, Read, Write};
 
+use anyhow::{Context, Result};
+use serde_json::{json, Value};
+
+use super::constants::PRE_TOOL_USE_KEY;
+use super::permissions::{self, PermissionVerdict};
 use crate::discover::registry::{has_heredoc, rewrite_command};
 
 const STDIN_CAP: usize = 1_048_576; // 1 MiB
@@ -56,7 +57,7 @@ pub fn run_copilot() -> Result<()> {
         Err(e) => {
             let _ = writeln!(io::stderr(), "[rtk hook] Failed to parse JSON input: {e}");
             return Ok(());
-        }
+        },
     };
 
     match detect_format(&v) {
@@ -155,7 +156,7 @@ fn handle_vscode(cmd: &str) -> Result<()> {
         HookDecision::Deny => {
             audit_log("deny", cmd, "");
             return Ok(());
-        }
+        },
         HookDecision::Defer => return Ok(()),
         HookDecision::AllowRewrite(r) => ("allow", r),
         HookDecision::AskRewrite(r) => ("ask", r),
@@ -199,7 +200,7 @@ fn copilot_cli_response_from_decision(
         HookDecision::Deny => {
             audit_log("deny", cmd, "");
             return None;
-        }
+        },
         HookDecision::Defer => return None,
         HookDecision::AllowRewrite(r) => (r, true),
         HookDecision::AskRewrite(r) => (r, false),
@@ -253,24 +254,22 @@ pub fn run_gemini() -> Result<()> {
                 io::stdout(),
                 r#"{{"decision":"deny","reason":"Blocked by RTK permission rule"}}"#
             );
-        }
+        },
         HookDecision::AllowRewrite(ref rewritten) => {
             audit_log("rewrite", cmd, rewritten);
             print_gemini("allow", Some(rewritten));
-        }
+        },
         HookDecision::AskRewrite(ref rewritten) => {
             audit_log("ask", cmd, rewritten);
             print_gemini("ask_user", Some(rewritten));
-        }
+        },
         HookDecision::Defer => print_gemini("ask_user", None),
     }
 
     Ok(())
 }
 
-fn print_allow() {
-    let _ = writeln!(io::stdout(), r#"{{"decision":"allow"}}"#);
-}
+fn print_allow() { let _ = writeln!(io::stdout(), r#"{{"decision":"allow"}}"#); }
 
 fn gemini_json(decision: &str, rewrite: Option<&str>) -> String {
     let mut output = serde_json::json!({ "decision": decision });
@@ -355,13 +354,13 @@ fn process_claude_payload(v: &Value) -> PayloadAction {
                 reason: "skip:deny_rule",
                 cmd: cmd.to_string(),
             }
-        }
+        },
         HookDecision::Defer => {
             return PayloadAction::Skip {
                 reason: "skip:defer",
                 cmd: cmd.to_string(),
             }
-        }
+        },
         HookDecision::AllowRewrite(r) => (r, true),
         HookDecision::AskRewrite(r) => (r, false),
     };
@@ -408,7 +407,7 @@ pub fn run_claude() -> Result<()> {
         Err(e) => {
             let _ = writeln!(io::stderr(), "[rtk hook] Failed to parse JSON input: {e}");
             return Ok(());
-        }
+        },
     };
 
     match process_claude_payload(&v) {
@@ -419,11 +418,11 @@ pub fn run_claude() -> Result<()> {
         } => {
             audit_log("rewrite", &cmd, &rewritten);
             let _ = writeln!(io::stdout(), "{output}");
-        }
+        },
         PayloadAction::Skip { reason, cmd } => {
             audit_log(reason, &cmd, "");
-        }
-        PayloadAction::Ignore => {}
+        },
+        PayloadAction::Ignore => {},
     }
 
     Ok(())
@@ -467,7 +466,7 @@ pub fn run_cursor() -> Result<()> {
         Err(_) => {
             let _ = writeln!(io::stdout(), "{{}}");
             return Ok(());
-        }
+        },
     };
 
     let cmd = match v
@@ -479,20 +478,20 @@ pub fn run_cursor() -> Result<()> {
         None => {
             let _ = writeln!(io::stdout(), "{{}}");
             return Ok(());
-        }
+        },
     };
 
     let output = match decide_hook_action(&cmd, permissions::Host::Cursor) {
         HookDecision::AllowRewrite(rewritten) => {
             audit_log("rewrite", &cmd, &rewritten);
             cursor_allow(&rewritten)
-        }
+        },
         other => {
             if matches!(other, HookDecision::Deny) {
                 audit_log("deny", &cmd, "");
             }
             "{}".to_string()
-        }
+        },
     };
     let _ = writeln!(io::stdout(), "{output}");
     Ok(())
@@ -508,9 +507,7 @@ fn cursor_allow(rewritten: &str) -> String {
 }
 
 #[cfg(test)]
-fn run_cursor_inner(input: &str) -> String {
-    run_cursor_inner_with_rules(input, &[], &[], &[])
-}
+fn run_cursor_inner(input: &str) -> String { run_cursor_inner_with_rules(input, &[], &[], &[]) }
 
 #[cfg(test)]
 fn run_cursor_inner_with_rules(
@@ -639,9 +636,7 @@ mod tests {
 
     // --- Copilot CLI handler: transparent rewrite via modifiedArgs ---
 
-    fn cli_args(cmd: &str) -> Value {
-        json!({ "command": cmd })
-    }
+    fn cli_args(cmd: &str) -> Value { json!({ "command": cmd }) }
 
     #[test]
     fn test_copilot_cli_ask_rewrite_omits_permission_decision() {
@@ -1271,9 +1266,7 @@ mod tests {
         decide_from_verdict(cmd, verdict)
     }
 
-    fn all_allowed() -> Vec<String> {
-        vec!["*".to_string()]
-    }
+    fn all_allowed() -> Vec<String> { vec!["*".to_string()] }
 
     #[test]
     fn test_decide_allow_for_attestable_allowed_command() {
@@ -1343,7 +1336,7 @@ mod tests {
         match decide_with_rules(cmd, deny, ask, allow) {
             HookDecision::Deny => {
                 r#"{"decision":"deny","reason":"Blocked by RTK permission rule"}"#.to_string()
-            }
+            },
             HookDecision::AllowRewrite(r) => gemini_json("allow", Some(&r)),
             HookDecision::AskRewrite(r) => gemini_json("ask_user", Some(&r)),
             HookDecision::Defer => gemini_json("ask_user", None),

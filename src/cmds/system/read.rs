@@ -1,10 +1,12 @@
 //! Reads source files with optional language-aware filtering to strip boilerplate.
 
-use crate::core::filter::{self, FilterLevel, Language};
-use crate::core::tracking;
-use anyhow::{Context, Result};
 use std::fs;
 use std::path::Path;
+
+use anyhow::{Context, Result};
+
+use crate::core::filter::{self, FilterLevel, Language};
+use crate::core::tracking;
 
 pub fn run(
     file: &Path,
@@ -178,9 +180,11 @@ fn apply_line_window(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::io::Write;
+
     use tempfile::NamedTempFile;
+
+    use super::*;
 
     #[test]
     fn test_read_rust_file() -> Result<()> {
@@ -246,7 +250,11 @@ fn main() {{
         writeln!(f2, "charlie\ndelta").unwrap();
 
         let output = std::process::Command::new(&bin)
-            .args(["read", &f1.path().to_string_lossy(), &f2.path().to_string_lossy()])
+            .args([
+                "read",
+                &f1.path().to_string_lossy(),
+                &f2.path().to_string_lossy(),
+            ])
             .output()
             .expect("failed to run rtk read");
 
@@ -266,15 +274,28 @@ fn main() {{
         writeln!(f1, "valid content").unwrap();
 
         let output = std::process::Command::new(&bin)
-            .args(["read", &f1.path().to_string_lossy(), "/tmp/rtk_nonexistent_file.txt"])
+            .args([
+                "read",
+                &f1.path().to_string_lossy(),
+                "/tmp/rtk_nonexistent_file.txt",
+            ])
             .output()
             .expect("failed to run rtk read");
 
-        assert!(!output.status.success(), "should exit non-zero on missing file");
+        assert!(
+            !output.status.success(),
+            "should exit non-zero on missing file"
+        );
         let stdout = String::from_utf8_lossy(&output.stdout);
         let stderr = String::from_utf8_lossy(&output.stderr);
-        assert!(stdout.contains("valid content"), "valid file should still be printed");
-        assert!(stderr.contains("rtk_nonexistent_file"), "should report missing file on stderr");
+        assert!(
+            stdout.contains("valid content"),
+            "valid file should still be printed"
+        );
+        assert!(
+            stderr.contains("rtk_nonexistent_file"),
+            "should report missing file on stderr"
+        );
     }
 
     #[test]

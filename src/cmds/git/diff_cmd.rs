@@ -1,9 +1,11 @@
 //! Compares two files and shows only the changed lines.
 
-use crate::core::tracking;
-use anyhow::Result;
 use std::fs;
 use std::path::Path;
+
+use anyhow::Result;
+
+use crate::core::tracking;
 
 /// Ultra-condensed diff - only changed lines, no context.
 /// Returns the diff-convention exit code: 0 if identical, 1 if files differ.
@@ -90,7 +92,7 @@ fn format_diff_changes(diff: &DiffResult) -> String {
             DiffChange::Removed(ln, c) => out.push_str(&format!("-{:4} {}\n", ln, c)),
             DiffChange::Modified(ln, old, new) => {
                 out.push_str(&format!("~{:4} {} → {}\n", ln, old, new))
-            }
+            },
         }
     }
     out
@@ -121,16 +123,16 @@ fn compute_diff(lines1: &[&str], lines2: &[&str]) -> DiffResult {
                     removed += 1;
                     added += 1;
                 }
-            }
+            },
             (Some(a), None) => {
                 changes.push(DiffChange::Removed(i + 1, a.to_string()));
                 removed += 1;
-            }
+            },
             (None, Some(b)) => {
                 changes.push(DiffChange::Added(i + 1, b.to_string()));
                 added += 1;
-            }
-            _ => {}
+            },
+            _ => {},
         }
     }
 
@@ -504,10 +506,10 @@ diff --git a/b.rs b/b.rs
         match &result.changes[0] {
             DiffChange::Removed(_, content) | DiffChange::Added(_, content) => {
                 assert_eq!(content.len(), 500, "Line was truncated!");
-            }
+            },
             DiffChange::Modified(_, old, _) => {
                 assert_eq!(old.len(), 500, "Line was truncated!");
-            }
+            },
         }
     }
 }

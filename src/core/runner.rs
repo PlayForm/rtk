@@ -1,7 +1,8 @@
 //! Shared command execution skeleton for filter modules.
 
-use anyhow::{Context, Result};
 use std::process::Command;
+
+use anyhow::{Context, Result};
 
 use crate::core::stream::{self, FilterMode, StdinMode, StreamFilter};
 use crate::core::tracking;
@@ -182,7 +183,7 @@ pub fn run(
                 &result.filtered,
             );
             Ok(result.exit_code)
-        }
+        },
         RunMode::Passthrough => {
             let result =
                 stream::run_streaming(&mut cmd, StdinMode::Inherit, FilterMode::Passthrough)
@@ -190,7 +191,7 @@ pub fn run(
 
             timer.track_passthrough(&cmd_label, &format!("rtk {} (passthrough)", cmd_label));
             Ok(result.exit_code)
-        }
+        },
     }
 }
 

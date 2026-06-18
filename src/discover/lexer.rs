@@ -14,9 +14,7 @@ pub struct ParsedToken {
     pub offset: usize,
 }
 
-pub fn tokenize(input: &str) -> Vec<ParsedToken> {
-    tokenize_inner(input, false)
-}
+pub fn tokenize(input: &str) -> Vec<ParsedToken> { tokenize_inner(input, false) }
 
 fn tokenize_inner(input: &str, emit_newline: bool) -> Vec<ParsedToken> {
     let mut tokens = Vec::new();
@@ -95,7 +93,7 @@ fn tokenize_inner(input: &str, emit_newline: bool) -> Vec<ParsedToken> {
                     });
                 }
                 current_start = byte_pos;
-            }
+            },
             '*' | '?' | '`' | '(' | ')' | '{' | '}' | '!' => {
                 flush_arg(&mut tokens, &mut current, current_start);
                 tokens.push(ParsedToken {
@@ -105,7 +103,7 @@ fn tokenize_inner(input: &str, emit_newline: bool) -> Vec<ParsedToken> {
                 });
                 byte_pos += char_len;
                 current_start = byte_pos;
-            }
+            },
             '|' => {
                 flush_arg(&mut tokens, &mut current, current_start);
                 let start = byte_pos;
@@ -126,7 +124,7 @@ fn tokenize_inner(input: &str, emit_newline: bool) -> Vec<ParsedToken> {
                     });
                 }
                 current_start = byte_pos;
-            }
+            },
             ';' => {
                 flush_arg(&mut tokens, &mut current, current_start);
                 tokens.push(ParsedToken {
@@ -136,7 +134,7 @@ fn tokenize_inner(input: &str, emit_newline: bool) -> Vec<ParsedToken> {
                 });
                 byte_pos += char_len;
                 current_start = byte_pos;
-            }
+            },
             '&' => {
                 flush_arg(&mut tokens, &mut current, current_start);
                 let start = byte_pos;
@@ -171,7 +169,7 @@ fn tokenize_inner(input: &str, emit_newline: bool) -> Vec<ParsedToken> {
                     });
                 }
                 current_start = byte_pos;
-            }
+            },
             '>' => {
                 let fd_prefix =
                     if !current.is_empty() && current.chars().all(|ch| ch.is_ascii_digit()) {
@@ -212,7 +210,7 @@ fn tokenize_inner(input: &str, emit_newline: bool) -> Vec<ParsedToken> {
                     offset: redir_start,
                 });
                 current_start = byte_pos;
-            }
+            },
             '<' => {
                 flush_arg(&mut tokens, &mut current, current_start);
                 let start = byte_pos;
@@ -229,7 +227,7 @@ fn tokenize_inner(input: &str, emit_newline: bool) -> Vec<ParsedToken> {
                     offset: start,
                 });
                 current_start = byte_pos;
-            }
+            },
             '\n' | '\r' if emit_newline => {
                 flush_arg(&mut tokens, &mut current, current_start);
                 tokens.push(ParsedToken {
@@ -239,19 +237,19 @@ fn tokenize_inner(input: &str, emit_newline: bool) -> Vec<ParsedToken> {
                 });
                 byte_pos += char_len;
                 current_start = byte_pos;
-            }
+            },
             c if c.is_whitespace() => {
                 flush_arg(&mut tokens, &mut current, current_start);
                 byte_pos += c.len_utf8();
                 current_start = byte_pos;
-            }
+            },
             _ => {
                 if current.is_empty() {
                     current_start = byte_pos;
                 }
                 current.push(c);
                 byte_pos += char_len;
-            }
+            },
         }
     }
 
@@ -299,15 +297,15 @@ fn contains_substitution(cmd: &str) -> bool {
             b'\\' if !in_single => {
                 i += 2;
                 continue;
-            }
+            },
             b'\'' if !in_double => in_single = !in_single,
             b'"' if !in_single => in_double = !in_double,
             b'`' if !in_single => return true,
             b'$' if !in_single && bytes.get(i + 1) == Some(&b'(') => return true,
             b'<' | b'>' if !in_single && !in_double && bytes.get(i + 1) == Some(&b'(') => {
                 return true
-            }
-            _ => {}
+            },
+            _ => {},
         }
         i += 1;
     }
@@ -397,7 +395,7 @@ pub fn split_on_operators(cmd: &str, stop_at_pipe: bool) -> Vec<&str> {
                     results.push(segment);
                 }
                 seg_start = tok.offset + tok.value.len();
-            }
+            },
             TokenKind::Pipe => {
                 let segment = trimmed[seg_start..tok.offset].trim();
                 if !segment.is_empty() {
@@ -407,8 +405,8 @@ pub fn split_on_operators(cmd: &str, stop_at_pipe: bool) -> Vec<&str> {
                     return results;
                 }
                 seg_start = tok.offset + tok.value.len();
-            }
-            _ => {}
+            },
+            _ => {},
         }
     }
 
@@ -445,21 +443,21 @@ pub fn shell_split(input: &str) -> Vec<String> {
                 if let Some(next) = chars.next() {
                     current.push(next);
                 }
-            }
+            },
             '\'' if !in_double => {
                 in_single = !in_single;
-            }
+            },
             '"' if !in_single => {
                 in_double = !in_double;
-            }
+            },
             ' ' | '\t' if !in_single && !in_double => {
                 if !current.is_empty() {
                     tokens.push(std::mem::take(&mut current));
                 }
-            }
+            },
             _ => {
                 current.push(c);
-            }
+            },
         }
     }
 

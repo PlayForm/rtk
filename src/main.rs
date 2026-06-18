@@ -7,6 +7,12 @@ mod learn;
 mod parser;
 
 // Re-export command modules for routing
+use std::ffi::OsString;
+use std::path::{Path, PathBuf};
+
+use anyhow::{Context, Result};
+use clap::error::ErrorKind;
+use clap::{Parser, Subcommand, ValueEnum};
 use cmds::cloud::{aws_cmd, container, curl_cmd, psql_cmd, wget_cmd};
 use cmds::dotnet::{binlog, dotnet_cmd, dotnet_format_report, dotnet_trx};
 use cmds::git::{diff_cmd, gh_cmd, git, glab_cmd, gt_cmd};
@@ -23,12 +29,6 @@ use cmds::system::{
     deps, env_cmd, find_cmd, format_cmd, grep_cmd, json_cmd, local_llm, log_cmd, ls, pipe_cmd,
     read, summary, tree, wc_cmd,
 };
-
-use anyhow::{Context, Result};
-use clap::error::ErrorKind;
-use clap::{Parser, Subcommand, ValueEnum};
-use std::ffi::OsString;
-use std::path::{Path, PathBuf};
 
 /// Target agent for hook installation.
 #[derive(Debug, Clone, Copy, PartialEq, ValueEnum)]
@@ -1236,13 +1236,13 @@ fn run_fallback(parse_error: clap::Error) -> Result<i32> {
                 core::tracking::record_parse_failure_silent(&raw_command, &error_message, true);
 
                 Ok(exit_code)
-            }
+            },
             Err(e) => {
                 // Command not found — same behaviour as no-TOML path
                 core::tracking::record_parse_failure_silent(&raw_command, &error_message, false);
                 eprintln!("[rtk: {}]", e);
                 Ok(127)
-            }
+            },
         }
     } else {
         // No TOML match: original passthrough behaviour (Stdio::inherit, streaming)
@@ -1260,13 +1260,13 @@ fn run_fallback(parse_error: clap::Error) -> Result<i32> {
                 core::tracking::record_parse_failure_silent(&raw_command, &error_message, true);
 
                 Ok(core::utils::exit_code_from_status(&s, &raw_command))
-            }
+            },
             Err(e) => {
                 core::tracking::record_parse_failure_silent(&raw_command, &error_message, false);
                 // Command not found or other OS error — single message, no duplicate Clap error
                 eprintln!("[rtk: {}]", e);
                 Ok(127)
-            }
+            },
         }
     }
 }
@@ -1310,9 +1310,7 @@ enum GtCommands {
 
 /// Split a string into shell-like tokens, respecting single and double quotes.
 /// e.g. `git log --format="%H %s"` → ["git", "log", "--format=%H %s"]
-fn shell_split(input: &str) -> Vec<String> {
-    discover::lexer::shell_split(input)
-}
+fn shell_split(input: &str) -> Vec<String> { discover::lexer::shell_split(input) }
 
 /// Merge pnpm global filters args with other ones for standard String-based commands
 fn merge_pnpm_args(filters: &[String], args: &[String]) -> Vec<String> {
@@ -1350,7 +1348,7 @@ fn validate_pnpm_filters(filters: &[String], command: &PnpmCommands) -> Option<S
                 return Some(msg);
             }
             None
-        }
+        },
         _ => None,
     }
 }
@@ -1372,7 +1370,7 @@ fn main() {
         Err(e) => {
             eprintln!("rtk: {:#}", e);
             1
-        }
+        },
     };
     std::process::exit(code);
 }
@@ -1410,7 +1408,7 @@ fn run_cli() -> Result<i32> {
                 e.exit();
             }
             return run_fallback(e);
-        }
+        },
     };
 
     // Warn if installed hook is outdated/missing (1/day, non-blocking).
@@ -1469,7 +1467,7 @@ fn run_cli() -> Result<i32> {
             } else {
                 0
             }
-        }
+        },
 
         Commands::Smart {
             file,
@@ -1478,7 +1476,7 @@ fn run_cli() -> Result<i32> {
         } => {
             local_llm::run(&file, &model, force_download, cli.verbose)?;
             0
-        }
+        },
 
         Commands::Git {
             directory,
@@ -1532,7 +1530,7 @@ fn run_cli() -> Result<i32> {
                 )?,
                 GitCommands::Log { args } => {
                     git::run(git::GitCommand::Log, &args, None, cli.verbose, &global_args)?
-                }
+                },
                 GitCommands::Status { args } => git::run(
                     git::GitCommand::Status,
                     &args,
@@ -1549,7 +1547,7 @@ fn run_cli() -> Result<i32> {
                 )?,
                 GitCommands::Add { args } => {
                     git::run(git::GitCommand::Add, &args, None, cli.verbose, &global_args)?
-                }
+                },
                 GitCommands::Commit { args } => git::run(
                     git::GitCommand::Commit,
                     &args,
@@ -1601,11 +1599,11 @@ fn run_cli() -> Result<i32> {
                 )?,
                 GitCommands::Other(args) => git::run_passthrough(&args, &global_args, cli.verbose)?,
             }
-        }
+        },
 
         Commands::Gh { subcommand, args } => {
             gh_cmd::run(&subcommand, &args, cli.verbose, cli.ultra_compact)?
-        }
+        },
 
         Commands::Glab {
             repo,
@@ -1624,7 +1622,7 @@ fn run_cli() -> Result<i32> {
                 args.push(g);
             }
             glab_cmd::run(&subcommand, &args, cli.verbose, cli.ultra_compact)?
-        }
+        },
 
         Commands::Aws { subcommand, args } => aws_cmd::run(&subcommand, &args, cli.verbose)?,
 
@@ -1655,19 +1653,19 @@ fn run_cli() -> Result<i32> {
                 PnpmCommands::Typecheck { args } => tsc_cmd::run(&args, cli.verbose)?,
                 PnpmCommands::Other(args) => {
                     pnpm_cmd::run_passthrough(&merge_pnpm_args_os(&filter, &args), cli.verbose)?
-                }
+                },
             }
-        }
+        },
 
         Commands::Err { command } => {
             let cmd = command.join(" ");
             runner::run_err(&cmd, cli.verbose)?
-        }
+        },
 
         Commands::Test { command } => {
             let cmd = command.join(" ");
             runner::run_test(&cmd, cli.verbose)?
-        }
+        },
 
         Commands::Json {
             file,
@@ -1680,22 +1678,22 @@ fn run_cli() -> Result<i32> {
                 json_cmd::run(&file, depth, keys_only, cli.verbose)?;
             }
             0
-        }
+        },
 
         Commands::Deps { path } => {
             deps::run(&path, cli.verbose)?;
             0
-        }
+        },
 
         Commands::Env { filter, show_all } => {
             env_cmd::run(filter.as_deref(), show_all, cli.verbose)?;
             0
-        }
+        },
 
         Commands::Find { args } => {
             find_cmd::run_from_args(&args, cli.verbose)?;
             0
-        }
+        },
 
         Commands::Diff { file1, file2 } => {
             if let Some(f2) = file2 {
@@ -1704,7 +1702,7 @@ fn run_cli() -> Result<i32> {
                 diff_cmd::run_stdin(cli.verbose)?;
                 0
             }
-        }
+        },
 
         Commands::Log { file } => {
             if let Some(f) = file {
@@ -1713,7 +1711,7 @@ fn run_cli() -> Result<i32> {
                 log_cmd::run_stdin(cli.verbose)?;
             }
             0
-        }
+        },
 
         Commands::Dotnet { command } => match command {
             DotnetCommands::Build { args } => dotnet_cmd::run_build(&args, cli.verbose)?,
@@ -1731,24 +1729,24 @@ fn run_cli() -> Result<i32> {
                     container::ContainerCmd::DockerPs
                 };
                 container::run(cmd, &[], cli.verbose)?
-            }
+            },
             DockerCommands::Images => {
                 container::run(container::ContainerCmd::DockerImages, &[], cli.verbose)?
-            }
+            },
             DockerCommands::Logs { container: c } => {
                 container::run(container::ContainerCmd::DockerLogs, &[c], cli.verbose)?
-            }
+            },
             DockerCommands::Compose { command: compose } => match compose {
                 ComposeCommands::Ps { all } => container::run_compose_ps(all, cli.verbose)?,
                 ComposeCommands::Logs { service, tail } => {
                     container::run_compose_logs(service.as_deref(), tail, cli.verbose)?
-                }
+                },
                 ComposeCommands::Build { service } => {
                     container::run_compose_build(service.as_deref(), cli.verbose)?
-                }
+                },
                 ComposeCommands::Other(args) => {
                     container::run_compose_passthrough(&args, cli.verbose)?
-                }
+                },
             },
             DockerCommands::Other(args) => container::run_docker_passthrough(&args, cli.verbose)?,
         },
@@ -1764,7 +1762,7 @@ fn run_cli() -> Result<i32> {
                     args.push(n);
                 }
                 container::run(container::ContainerCmd::KubectlPods, &args, cli.verbose)?
-            }
+            },
             KubectlCommands::Services { namespace, all } => {
                 let mut args: Vec<String> = Vec::new();
                 if all {
@@ -1774,7 +1772,7 @@ fn run_cli() -> Result<i32> {
                     args.push(n);
                 }
                 container::run(container::ContainerCmd::KubectlServices, &args, cli.verbose)?
-            }
+            },
             KubectlCommands::Logs { pod, container: c } => {
                 let mut args = vec![pod];
                 if let Some(cont) = c {
@@ -1782,14 +1780,14 @@ fn run_cli() -> Result<i32> {
                     args.push(cont);
                 }
                 container::run(container::ContainerCmd::KubectlLogs, &args, cli.verbose)?
-            }
+            },
             KubectlCommands::Other(args) => container::run_kubectl_passthrough(&args, cli.verbose)?,
         },
 
         Commands::Summary { command } => {
             let cmd = command.join(" ");
             summary::run(&cmd, cli.verbose)?
-        }
+        },
 
         Commands::Grep {
             max_len,
@@ -1903,7 +1901,7 @@ fn run_cli() -> Result<i32> {
                 )?;
             }
             0
-        }
+        },
 
         Commands::Wget { url, output, args } => {
             if output.as_deref() == Some("-") {
@@ -1918,7 +1916,7 @@ fn run_cli() -> Result<i32> {
                 all_args.extend(args);
                 wget_cmd::run(&url, &all_args, cli.verbose)?
             }
-        }
+        },
 
         Commands::Wc { args } => wc_cmd::run(&args, cli.verbose)?,
 
@@ -1954,7 +1952,7 @@ fn run_cli() -> Result<i32> {
                 cli.verbose,
             )?;
             0
-        }
+        },
 
         Commands::CcEconomics {
             daily,
@@ -1965,7 +1963,7 @@ fn run_cli() -> Result<i32> {
         } => {
             analytics::cc_economics::run(daily, weekly, monthly, all, &format, cli.verbose)?;
             0
-        }
+        },
 
         Commands::Config { create } => {
             if create {
@@ -1975,16 +1973,16 @@ fn run_cli() -> Result<i32> {
                 core::config::show_config()?;
             }
             0
-        }
+        },
 
         Commands::Jest { ref args } | Commands::Vitest { ref args } => {
             vitest_cmd::run_test(&cli.command, args, cli.verbose)?
-        }
+        },
 
         Commands::Prisma { command } => match command {
             PrismaCommands::Generate { args } => {
                 prisma_cmd::run(prisma_cmd::PrismaCommand::Generate, &args, cli.verbose)?
-            }
+            },
             PrismaCommands::Migrate { command } => match command {
                 PrismaMigrateCommands::Dev { name, args } => prisma_cmd::run(
                     prisma_cmd::PrismaCommand::Migrate {
@@ -2010,7 +2008,7 @@ fn run_cli() -> Result<i32> {
             },
             PrismaCommands::DbPush { args } => {
                 prisma_cmd::run(prisma_cmd::PrismaCommand::DbPush, &args, cli.verbose)?
-            }
+            },
         },
 
         Commands::Tsc { args } => tsc_cmd::run(&args, cli.verbose)?,
@@ -2028,22 +2026,22 @@ fn run_cli() -> Result<i32> {
         Commands::Cargo { command } => match command {
             CargoCommands::Build { args } => {
                 cargo_cmd::run(cargo_cmd::CargoCommand::Build, &args, cli.verbose)?
-            }
+            },
             CargoCommands::Test { args } => {
                 cargo_cmd::run(cargo_cmd::CargoCommand::Test, &args, cli.verbose)?
-            }
+            },
             CargoCommands::Clippy { args } => {
                 cargo_cmd::run(cargo_cmd::CargoCommand::Clippy, &args, cli.verbose)?
-            }
+            },
             CargoCommands::Check { args } => {
                 cargo_cmd::run(cargo_cmd::CargoCommand::Check, &args, cli.verbose)?
-            }
+            },
             CargoCommands::Install { args } => {
                 cargo_cmd::run(cargo_cmd::CargoCommand::Install, &args, cli.verbose)?
-            }
+            },
             CargoCommands::Nextest { args } => {
                 cargo_cmd::run(cargo_cmd::CargoCommand::Nextest, &args, cli.verbose)?
-            }
+            },
             CargoCommands::Other(args) => cargo_cmd::run_passthrough(&args, cli.verbose)?,
         },
 
@@ -2060,17 +2058,17 @@ fn run_cli() -> Result<i32> {
         } => {
             discover::run(project.as_deref(), all, since, limit, &format, cli.verbose)?;
             0
-        }
+        },
 
         Commands::Session {} => {
             analytics::session_cmd::run(cli.verbose)?;
             0
-        }
+        },
 
         Commands::Telemetry { command } => {
             core::telemetry_cmd::run(&command)?;
             0
-        }
+        },
 
         Commands::Learn {
             project,
@@ -2091,7 +2089,7 @@ fn run_cli() -> Result<i32> {
                 min_occurrences,
             )?;
             0
-        }
+        },
 
         Commands::Npx { args } => {
             if args.is_empty() {
@@ -2131,7 +2129,7 @@ fn run_cli() -> Result<i32> {
                                     &format!("rtk npx {} (passthrough)", args_str),
                                 );
                                 core::utils::exit_code_from_status(&status, "npx prisma")
-                            }
+                            },
                         }
                     } else {
                         let timer = core::tracking::TimedExecution::start();
@@ -2142,13 +2140,13 @@ fn run_cli() -> Result<i32> {
                         timer.track_passthrough("npx prisma", "rtk npx prisma (passthrough)");
                         core::utils::exit_code_from_status(&status, "npx prisma")
                     }
-                }
+                },
                 "next" => next_cmd::run(&args[1..], cli.verbose)?,
                 "prettier" => prettier_cmd::run(&args[1..], cli.verbose)?,
                 "playwright" => playwright_cmd::run(&args[1..], cli.verbose)?,
                 _ => npm_cmd::exec(&args, cli.verbose, cli.skip_env)?,
             }
-        }
+        },
 
         Commands::Ruff { args } => ruff_cmd::run(&args, cli.verbose)?,
 
@@ -2190,25 +2188,25 @@ fn run_cli() -> Result<i32> {
         Commands::HookAudit { since } => {
             hooks::hook_audit_cmd::run(since, cli.verbose)?;
             0
-        }
+        },
 
         Commands::Hook { command } => match command {
             HookCommands::Claude => {
                 hooks::hook_cmd::run_claude()?;
                 0
-            }
+            },
             HookCommands::Cursor => {
                 hooks::hook_cmd::run_cursor()?;
                 0
-            }
+            },
             HookCommands::Gemini => {
                 hooks::hook_cmd::run_gemini()?;
                 0
-            }
+            },
             HookCommands::Copilot => {
                 hooks::hook_cmd::run_copilot()?;
                 0
-            }
+            },
             HookCommands::Check { agent: _, command } => {
                 use crate::discover::registry::rewrite_command;
                 let raw = command.join(" ");
@@ -2219,20 +2217,20 @@ fn run_cli() -> Result<i32> {
                     Some(rewritten) => {
                         println!("{}", rewritten);
                         0
-                    }
+                    },
                     None => {
                         eprintln!("No rewrite for: {}", raw);
                         1
-                    }
+                    },
                 }
-            }
+            },
         },
 
         Commands::Rewrite { args } => {
             let cmd = args.join(" ");
             hooks::rewrite_cmd::run(&cmd)?;
             0
-        }
+        },
 
         Commands::Pipe {
             filter,
@@ -2240,7 +2238,7 @@ fn run_cli() -> Result<i32> {
         } => {
             pipe_cmd::run(filter.as_deref(), passthrough)?;
             0
-        }
+        },
 
         Commands::Run { command, args } => {
             let raw = match command {
@@ -2261,7 +2259,7 @@ fn run_cli() -> Result<i32> {
                     .with_context(|| format!("Failed to execute: {}", raw))?;
                 status.code().unwrap_or(1)
             }
-        }
+        },
 
         Commands::Proxy { args } => {
             use std::io::{Read, Write};
@@ -2441,17 +2439,17 @@ fn run_cli() -> Result<i32> {
             );
 
             core::utils::exit_code_from_status(&status, &cmd_name)
-        }
+        },
 
         Commands::Trust { list } => {
             hooks::trust::run_trust(list)?;
             0
-        }
+        },
 
         Commands::Untrust => {
             hooks::trust::run_untrust()?;
             0
-        }
+        },
 
         Commands::Verify {
             filter,
@@ -2466,7 +2464,7 @@ fn run_cli() -> Result<i32> {
                 hooks::verify_cmd::run(None, require_all)?;
             }
             0
-        }
+        },
     };
 
     Ok(code)
@@ -2532,9 +2530,11 @@ fn is_operational_command(cmd: &Commands) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use clap::Parser;
     use std::cell::Cell;
+
+    use clap::Parser;
+
+    use super::*;
 
     #[test]
     fn test_git_commit_single_message() {
@@ -2545,7 +2545,7 @@ mod tests {
                 ..
             } => {
                 assert_eq!(args, vec!["-m", "fix: typo"]);
-            }
+            },
             _ => panic!("Expected Git Commit command"),
         }
     }
@@ -2571,7 +2571,7 @@ mod tests {
                     args,
                     vec!["-m", "feat: add support", "-m", "Body paragraph here."]
                 );
-            }
+            },
             _ => panic!("Expected Git Commit command"),
         }
     }
@@ -2586,7 +2586,7 @@ mod tests {
                 ..
             } => {
                 assert_eq!(args, vec!["-am", "quick fix"]);
-            }
+            },
             _ => panic!("Expected Git Commit command"),
         }
     }
@@ -2601,7 +2601,7 @@ mod tests {
                 ..
             } => {
                 assert_eq!(args, vec!["--amend", "-m", "new msg"]);
-            }
+            },
             _ => panic!("Expected Git Commit command"),
         }
     }
@@ -2623,7 +2623,7 @@ mod tests {
                 assert!(no_optional_locks);
                 assert!(!bare);
                 assert!(!literal_pathspecs);
-            }
+            },
             _ => panic!("Expected Git command"),
         }
     }
@@ -2658,7 +2658,7 @@ mod tests {
                         "footer"
                     ]
                 );
-            }
+            },
             _ => panic!("Expected Git Commit command"),
         }
     }
@@ -2675,7 +2675,7 @@ mod tests {
         match cli.command {
             Commands::Init { agent, .. } => {
                 assert_eq!(agent, Some(AgentTarget::Hermes));
-            }
+            },
             _ => panic!("Expected Init command"),
         }
     }
@@ -2701,7 +2701,7 @@ mod tests {
             } => {
                 assert_eq!(agent, Some(AgentTarget::Hermes));
                 assert!(uninstall);
-            }
+            },
             _ => panic!("Expected Init command"),
         }
     }
@@ -2776,7 +2776,7 @@ mod tests {
             match cli.command {
                 Commands::Git { directory, .. } => {
                     assert_eq!(directory, vec!["/path"]);
-                }
+                },
                 _ => panic!("Expected Git command"),
             }
         }
@@ -2830,7 +2830,7 @@ mod tests {
             Commands::Run { command, args } => {
                 assert_eq!(command, Some("git status && echo done".to_string()));
                 assert!(args.is_empty());
-            }
+            },
             _ => panic!("Expected Run command"),
         }
     }
@@ -2842,7 +2842,7 @@ mod tests {
             Commands::Run { command, args } => {
                 assert!(command.is_none());
                 assert_eq!(args, vec!["echo", "hello"]);
-            }
+            },
             _ => panic!("Expected Run command"),
         }
     }
@@ -2867,7 +2867,7 @@ mod tests {
             } => {
                 assert_eq!(agent, "claude");
                 assert_eq!(command, vec!["git", "status"]);
-            }
+            },
             _ => panic!("Expected Hook Check command"),
         }
     }
@@ -2883,7 +2883,7 @@ mod tests {
             } => {
                 assert_eq!(agent, "gemini");
                 assert_eq!(command, vec!["cargo", "test"]);
-            }
+            },
             _ => panic!("Expected Hook Check command"),
         }
     }
@@ -2907,7 +2907,7 @@ mod tests {
             } => {
                 assert_eq!(agent, "claude");
                 assert_eq!(command, vec!["shadowenv", "exec", "--", "git", "status"]);
-            }
+            },
             _ => panic!("Expected Hook Check command"),
         }
     }
@@ -2995,7 +2995,7 @@ mod tests {
                 match cli.command {
                     Commands::Rewrite { ref args } => {
                         assert!(args.len() >= 2, "rewrite args should capture all tokens");
-                    }
+                    },
                     _ => panic!("expected Rewrite command"),
                 }
             }
@@ -3012,7 +3012,7 @@ mod tests {
                 Commands::Rewrite { ref args } => {
                     assert_eq!(args.len(), 1);
                     assert_eq!(args[0], "git status");
-                }
+                },
                 _ => panic!("expected Rewrite command"),
             }
         }
@@ -3081,7 +3081,7 @@ mod tests {
                     args,
                     vec!["--filter", "@app3", "--filter", "@app4", "--prod"]
                 );
-            }
+            },
             _ => panic!("Expected Pnpm List command"),
         }
     }
@@ -3103,7 +3103,7 @@ mod tests {
                     "-u must be forwarded to git push, got: {:?}",
                     args
                 );
-            }
+            },
             _ => panic!("Expected Git Push command"),
         }
     }
@@ -3116,7 +3116,7 @@ mod tests {
         match cli.command {
             Commands::Pnpm { filter, .. } => {
                 assert_eq!(filter, vec!["@app1", "@app2"]);
-            }
+            },
             _ => panic!("Expected Pnpm command"),
         }
     }
@@ -3139,7 +3139,7 @@ mod tests {
 
                 assert!(filter.is_empty());
                 assert!(warning.is_none())
-            }
+            },
             _ => panic!("Expected Pnpm Build command"),
         }
     }
@@ -3166,7 +3166,7 @@ mod tests {
 
                 assert_eq!(filter, vec!["@app1", "@app2"]);
                 assert_eq!(warning, "[rtk] warning: --filter is not yet supported for pnpm tsc, filters preceding the subcommand will be ignored")
-            }
+            },
             _ => panic!("Expected Pnpm Build command"),
         }
     }
@@ -3224,7 +3224,7 @@ mod tests {
         match cli.command {
             Commands::Npx { args } => {
                 assert_eq!(args, vec!["cowsay", "hello"]);
-            }
+            },
             _ => panic!("Expected Commands::Npx for unknown tool"),
         }
     }
@@ -3246,7 +3246,7 @@ mod tests {
                     Some(AgentTarget::Pi),
                     "--agent pi must set Pi variant"
                 );
-            }
+            },
             _ => panic!("Expected Init command"),
         }
     }
@@ -3265,7 +3265,7 @@ mod tests {
                 assert!(uninstall);
                 assert_eq!(agent, Some(AgentTarget::Pi));
                 assert!(global);
-            }
+            },
             _ => panic!("Expected Init command"),
         }
     }

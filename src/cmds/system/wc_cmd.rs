@@ -1,3 +1,5 @@
+use anyhow::Result;
+
 /// Compact filter for `wc` — strips redundant paths and alignment padding.
 ///
 /// Compression examples:
@@ -8,7 +10,6 @@
 /// - `wc -l *.py`     → table with common path prefix stripped
 use crate::core::runner::{self, RunOptions};
 use crate::core::utils::resolved_command;
-use anyhow::Result;
 
 pub fn run(args: &[String], verbose: u8) -> Result<i32> {
     let mut cmd = resolved_command("wc");
@@ -81,20 +82,20 @@ fn detect_mode(args: &[String]) -> WcMode {
                 'l' => {
                     has_l = true;
                     flag_count += 1;
-                }
+                },
                 'w' => {
                     has_w = true;
                     flag_count += 1;
-                }
+                },
                 'c' => {
                     has_c = true;
                     flag_count += 1;
-                }
+                },
                 'm' => {
                     has_m = true;
                     flag_count += 1;
-                }
-                _ => {}
+                },
+                _ => {},
             }
         }
     }
@@ -143,14 +144,14 @@ fn format_single_line(line: &str, mode: &WcMode) -> String {
         WcMode::Lines | WcMode::Words | WcMode::Bytes | WcMode::Chars => {
             // First number is the only requested column
             parts.first().map(|s| s.to_string()).unwrap_or_default()
-        }
+        },
         WcMode::Full => {
             if parts.len() >= 3 {
                 format!("{}L {}W {}B", parts[0], parts[1], parts[2])
             } else {
                 line.trim().to_string()
             }
-        }
+        },
         WcMode::Mixed => {
             // Strip file path, keep numbers only
             if parts.len() >= 2 {
@@ -163,7 +164,7 @@ fn format_single_line(line: &str, mode: &WcMode) -> String {
             } else {
                 line.trim().to_string()
             }
-        }
+        },
     }
 }
 
@@ -199,7 +200,7 @@ fn format_multi_line(lines: &[&str], mode: &WcMode) -> String {
                     let name = strip_prefix(parts.last().unwrap_or(&""), &common_prefix);
                     result.push(format!("{} {}", parts.first().unwrap_or(&"0"), name));
                 }
-            }
+            },
             WcMode::Full => {
                 if is_total {
                     result.push(format!(
@@ -217,7 +218,7 @@ fn format_multi_line(lines: &[&str], mode: &WcMode) -> String {
                 } else {
                     result.push(line.trim().to_string());
                 }
-            }
+            },
             WcMode::Mixed => {
                 if is_total {
                     let nums: Vec<&str> = parts[..parts.len() - 1].to_vec();
@@ -234,7 +235,7 @@ fn format_multi_line(lines: &[&str], mode: &WcMode) -> String {
                 } else {
                     result.push(line.trim().to_string());
                 }
-            }
+            },
         }
     }
 

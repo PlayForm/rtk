@@ -1,9 +1,10 @@
 //! Summarizes source files using heuristic analysis — no external model needed.
 
-use anyhow::{Context, Result};
-use regex::Regex;
 use std::fs;
 use std::path::Path;
+
+use anyhow::{Context, Result};
+use regex::Regex;
 
 use crate::core::filter::Language;
 
@@ -134,7 +135,7 @@ fn extract_imports(content: &str, lang: &Language) -> Vec<String> {
         Language::Python => r"^(?:from\s+(\S+)|import\s+(\S+))",
         Language::JavaScript | Language::TypeScript => {
             r#"(?:import.*from\s+['"]([^'"]+)['"]|require\(['"]([^'"]+)['"]\))"#
-        }
+        },
         Language::Go => r#"^\s*"([^"]+)"$"#,
         _ => return Vec::new(),
     };
@@ -173,7 +174,7 @@ fn extract_functions(content: &str, lang: &Language) -> Vec<String> {
         Language::Python => r"def\s+([a-zA-Z_][a-zA-Z0-9_]*)",
         Language::JavaScript | Language::TypeScript => {
             r"(?:async\s+)?function\s+([a-zA-Z_][a-zA-Z0-9_]*)|(?:const|let|var)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(?:async\s+)?\("
-        }
+        },
         Language::Go => r"func\s+(?:\([^)]+\)\s+)?([a-zA-Z_][a-zA-Z0-9_]*)",
         _ => return Vec::new(),
     };
@@ -251,7 +252,7 @@ fn detect_patterns(content: &str, lang: &Language) -> Vec<String> {
             if content.contains("Box<dyn") || content.contains("&dyn") {
                 patterns.push("dyn dispatch".to_string());
             }
-        }
+        },
         Language::Python => {
             if content.contains("@dataclass") {
                 patterns.push("dataclass".to_string());
@@ -259,7 +260,7 @@ fn detect_patterns(content: &str, lang: &Language) -> Vec<String> {
             if content.contains("def __init__") {
                 patterns.push("OOP".to_string());
             }
-        }
+        },
         Language::JavaScript | Language::TypeScript => {
             if content.contains("useState") || content.contains("useEffect") {
                 patterns.push("React hooks".to_string());
@@ -267,8 +268,8 @@ fn detect_patterns(content: &str, lang: &Language) -> Vec<String> {
             if content.contains("export default") {
                 patterns.push("ES modules".to_string());
             }
-        }
-        _ => {}
+        },
+        _ => {},
     }
 
     patterns.into_iter().take(3).collect()

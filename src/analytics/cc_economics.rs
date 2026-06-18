@@ -3,10 +3,11 @@
 //! Combines ccusage (tokens spent) with rtk tracking (tokens saved) to provide
 //! dual-metric economic impact reporting with blended and active cost-per-token.
 
+use std::collections::HashMap;
+
 use anyhow::{Context, Result};
 use chrono::NaiveDate;
 use serde::Serialize;
-use std::collections::HashMap;
 
 use super::ccusage::{self, CcusagePeriod, Granularity};
 use crate::core::tracking::{DayStats, MonthStats, Tracker, WeekStats};
@@ -249,7 +250,7 @@ fn merge_weekly(cc: Option<Vec<CcusagePeriod>>, rtk: Vec<WeekStats>) -> Vec<Peri
             None => {
                 eprintln!("[warn] Invalid week_start format: {}", entry.week_start);
                 continue;
-            }
+            },
         };
 
         map.entry(monday_key)

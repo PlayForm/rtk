@@ -4,11 +4,13 @@
 //! Claude Code API usage metrics. Handles subprocess execution, JSON parsing,
 //! and graceful degradation when ccusage is unavailable.
 
-use crate::core::stream::exec_capture;
-use crate::core::utils::{resolved_command, tool_exists};
+use std::process::Command;
+
 use anyhow::{Context, Result};
 use serde::Deserialize;
-use std::process::Command;
+
+use crate::core::stream::exec_capture;
+use crate::core::utils::{resolved_command, tool_exists};
 
 // ── Public Types ──
 
@@ -85,9 +87,7 @@ struct MonthlyEntry {
 // ── Public API ──
 
 /// Check if ccusage binary exists in PATH
-fn binary_exists() -> bool {
-    tool_exists("ccusage")
-}
+fn binary_exists() -> bool { tool_exists("ccusage") }
 
 /// Build the ccusage command, falling back to npx if binary not in PATH
 fn build_command() -> Option<Command> {
@@ -126,7 +126,7 @@ pub fn fetch(granularity: Granularity) -> Result<Option<Vec<CcusagePeriod>>> {
         None => {
             eprintln!("[warn] ccusage not found. Install: npm i -g ccusage (or use npx ccusage)");
             return Ok(None);
-        }
+        },
     };
 
     let subcommand = match granularity {
@@ -144,7 +144,7 @@ pub fn fetch(granularity: Granularity) -> Result<Option<Vec<CcusagePeriod>>> {
         Err(e) => {
             eprintln!("[warn] ccusage execution failed: {}", e);
             return Ok(None);
-        }
+        },
         Ok(r) => r,
     };
 
@@ -178,7 +178,7 @@ fn parse_json(json: &str, granularity: Granularity) -> Result<Vec<CcusagePeriod>
                     metrics: e.metrics,
                 })
                 .collect())
-        }
+        },
         Granularity::Weekly => {
             let resp: WeeklyResponse =
                 serde_json::from_str(json).context("Invalid JSON structure for weekly data")?;
@@ -190,7 +190,7 @@ fn parse_json(json: &str, granularity: Granularity) -> Result<Vec<CcusagePeriod>
                     metrics: e.metrics,
                 })
                 .collect())
-        }
+        },
         Granularity::Monthly => {
             let resp: MonthlyResponse =
                 serde_json::from_str(json).context("Invalid JSON structure for monthly data")?;
@@ -202,7 +202,7 @@ fn parse_json(json: &str, granularity: Granularity) -> Result<Vec<CcusagePeriod>
                     metrics: e.metrics,
                 })
                 .collect())
-        }
+        },
     }
 }
 

@@ -1,11 +1,13 @@
 //! Filters environment variables, hiding secrets and noise.
 
-use crate::core::tracking;
-use crate::core::truncate::{CAP_LIST, CAP_WARNINGS};
-use anyhow::Result;
 use std::collections::HashSet;
 use std::env;
 use std::fmt::Write;
+
+use anyhow::Result;
+
+use crate::core::tracking;
+use crate::core::truncate::{CAP_LIST, CAP_WARNINGS};
 
 /// Show filtered environment variables (hide sensitive data)
 pub fn run(filter: Option<&str>, show_all: bool, verbose: u8) -> Result<()> {

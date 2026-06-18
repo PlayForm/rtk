@@ -5,10 +5,11 @@
 //! - Text truncation
 //! - Command execution with error context
 
-use anyhow::{Context, Result};
-use regex::Regex;
 use std::path::PathBuf;
 use std::process::Command;
+
+use anyhow::{Context, Result};
+use regex::Regex;
 
 /// Truncates a string to `max_len` characters, appending `...` if needed.
 ///
@@ -203,7 +204,7 @@ pub fn exit_code_from_output(output: &std::process::Output, label: &str) -> i32 
             }
             eprintln!("[rtk] {}: process terminated by signal", label);
             1
-        }
+        },
     }
 }
 
@@ -224,7 +225,7 @@ pub fn exit_code_from_status(status: &std::process::ExitStatus, label: &str) -> 
             }
             eprintln!("[rtk] {}: process terminated by signal", label);
             1
-        }
+        },
     }
 }
 
@@ -255,9 +256,7 @@ pub fn ruby_exec(tool: &str) -> Command {
 /// Count whitespace-delimited tokens in text. Used by filter tests to verify
 /// token savings claims.
 #[cfg(test)]
-pub fn count_tokens(text: &str) -> usize {
-    text.split_whitespace().count()
-}
+pub fn count_tokens(text: &str) -> usize { text.split_whitespace().count() }
 
 /// Detect the package manager used in the current directory.
 /// Returns "pnpm", "yarn", or "npm" based on lockfile presence.
@@ -291,17 +290,17 @@ pub fn package_manager_exec(tool: &str) -> Command {
                 let mut c = resolved_command("pnpm");
                 c.arg("exec").arg("--").arg(tool);
                 c
-            }
+            },
             "yarn" => {
                 let mut c = resolved_command("yarn");
                 c.arg("exec").arg("--").arg(tool);
                 c
-            }
+            },
             _ => {
                 let mut c = resolved_command("npx");
                 c.arg("--no-install").arg("--").arg(tool);
                 c
-            }
+            },
         }
     }
 }
@@ -351,16 +350,14 @@ pub fn resolved_command(name: &str) -> Command {
             }
 
             Command::new(name)
-        }
+        },
     }
 }
 
 /// Check if a tool exists on PATH (PATHEXT-aware on Windows).
 ///
 /// Replaces manual `Command::new("which").arg(tool)` checks that fail on Windows.
-pub fn tool_exists(name: &str) -> bool {
-    which::which(name).is_ok()
-}
+pub fn tool_exists(name: &str) -> bool { which::which(name).is_ok() }
 
 /// Extract short name from AWS ARN.
 /// Example: `arn:aws:ecs:region:acct:service/cluster/name` -> `name`
@@ -642,8 +639,9 @@ mod tests {
 
     #[cfg(target_os = "windows")]
     mod windows_tests {
-        use super::super::*;
         use std::fs;
+
+        use super::super::*;
 
         /// Create a temporary .cmd wrapper to simulate Node.js tool installation
         fn create_temp_cmd_wrapper(dir: &std::path::Path, name: &str) -> std::path::PathBuf {

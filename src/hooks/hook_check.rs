@@ -1,11 +1,12 @@
 //! Detects whether RTK hooks are installed and warns if they are outdated.
 
+use std::path::PathBuf;
+
 use super::constants::{
     CLAUDE_HOOK_COMMAND, HOOKS_SUBDIR, PRE_TOOL_USE_KEY, REWRITE_HOOK_FILE, SETTINGS_JSON,
 };
 use super::init::resolve_claude_dir;
 use crate::core::constants::RTK_DATA_DIR;
-use std::path::PathBuf;
 
 const CURRENT_HOOK_VERSION: u8 = 3;
 const WARN_INTERVAL_SECS: u64 = 24 * 3600;
@@ -97,7 +98,7 @@ fn check_and_warn() -> Option<()> {
         HookStatus::Ok => return Some(()),
         HookStatus::Missing => {
             "[rtk] /!\\ No hook installed — run `rtk init -g` for automatic token savings"
-        }
+        },
         HookStatus::Outdated => "[rtk] /!\\ Hook outdated — run `rtk init -g` to update",
     };
 

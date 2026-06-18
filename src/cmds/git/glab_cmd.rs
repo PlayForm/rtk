@@ -10,15 +10,17 @@
 //! - Merge status: `merge_status` ("can_be_merged") (not `mergeable`)
 //! - Pipeline: `head_pipeline.status` (not `statusCheckRollup`)
 
-use super::git;
-use crate::core::runner::{self, RunOptions};
-use crate::core::truncate::{CAP_LIST, CAP_WARNINGS};
-use crate::core::utils::{ok_confirmation, resolved_command, strip_ansi, truncate};
+use std::process::Command;
+
 use anyhow::Result;
 use lazy_static::lazy_static;
 use regex::Regex;
 use serde_json::Value;
-use std::process::Command;
+
+use super::git;
+use crate::core::runner::{self, RunOptions};
+use crate::core::truncate::{CAP_LIST, CAP_WARNINGS};
+use crate::core::utils::{ok_confirmation, resolved_command, strip_ansi, truncate};
 
 lazy_static! {
     static ref HTML_COMMENT_RE: Regex = Regex::new(r"(?s)<!--.*?-->").unwrap();
@@ -84,17 +86,17 @@ fn filter_markdown_body(body: &str) -> String {
                             .unwrap_or(remaining.len());
                         result.push_str(&remaining[end..after_close]);
                         remaining = &remaining[after_close..];
-                    }
+                    },
                     None => {
                         result.push_str(&remaining[start..]);
                         remaining = "";
-                    }
+                    },
                 }
-            }
+            },
             None => {
                 result.push_str(&filter_markdown_segment(remaining));
                 break;
-            }
+            },
         }
     }
 
@@ -333,7 +335,9 @@ fn format_mr_list(json: &Value, ultra_compact: bool) -> String {
     if all_lines.len() > MAX_LIST {
         filtered.push_str(&format!("  … +{} more\n", all_lines.len() - MAX_LIST));
         let all_text = all_lines.join("\n");
-        if let Some(hint) = crate::core::tee::force_tee_tail_hint(&all_text, "glab-mrs", MAX_LIST + 1) {
+        if let Some(hint) =
+            crate::core::tee::force_tee_tail_hint(&all_text, "glab-mrs", MAX_LIST + 1)
+        {
             filtered.push_str(&format!("  {}\n", hint));
         }
     }
@@ -550,7 +554,11 @@ fn format_issue_list(json: &Value, ultra_compact: bool) -> String {
             let title = issue["title"].as_str().unwrap_or("???");
             let state = issue["state"].as_str().unwrap_or("???");
             let icon = if ultra_compact {
-                if state == "opened" { "O" } else { "C" }
+                if state == "opened" {
+                    "O"
+                } else {
+                    "C"
+                }
             } else if state == "opened" {
                 "[open]"
             } else {
@@ -566,7 +574,9 @@ fn format_issue_list(json: &Value, ultra_compact: bool) -> String {
     if all_lines.len() > MAX_LIST {
         filtered.push_str(&format!("  … +{} more\n", all_lines.len() - MAX_LIST));
         let all_text = all_lines.join("\n");
-        if let Some(hint) = crate::core::tee::force_tee_tail_hint(&all_text, "glab-issues", MAX_LIST + 1) {
+        if let Some(hint) =
+            crate::core::tee::force_tee_tail_hint(&all_text, "glab-issues", MAX_LIST + 1)
+        {
             filtered.push_str(&format!("  {}\n", hint));
         }
     }
@@ -1128,13 +1138,9 @@ mod tests {
         assert_eq!(result, "ok approved !42");
     }
 
-    fn count_tokens(text: &str) -> usize {
-        text.split_whitespace().count()
-    }
+    fn count_tokens(text: &str) -> usize { text.split_whitespace().count() }
 
-    fn parse_fixture(raw: &str) -> Value {
-        serde_json::from_str(raw).expect("valid JSON fixture")
-    }
+    fn parse_fixture(raw: &str) -> Value { serde_json::from_str(raw).expect("valid JSON fixture") }
 
     #[test]
     fn test_mr_list_token_savings() {

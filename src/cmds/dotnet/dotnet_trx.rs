@@ -1,15 +1,15 @@
 //! Parses .trx test result files (Visual Studio XML format) into compact summaries.
 
-use crate::binlog::{FailedTest, TestSummary};
-use chrono::{DateTime, FixedOffset};
-use quick_xml::events::{BytesStart, Event};
-use quick_xml::Reader;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
-fn local_name(name: &[u8]) -> &[u8] {
-    name.rsplit(|b| *b == b':').next().unwrap_or(name)
-}
+use chrono::{DateTime, FixedOffset};
+use quick_xml::events::{BytesStart, Event};
+use quick_xml::Reader;
+
+use crate::binlog::{FailedTest, TestSummary};
+
+fn local_name(name: &[u8]) -> &[u8] { name.rsplit(|b| *b == b':').next().unwrap_or(name) }
 
 fn extract_attr_value(
     reader: &Reader<&[u8]>,
@@ -77,10 +77,10 @@ fn parse_trx_time_bounds(content: &str) -> Option<(DateTime<FixedOffset>, DateTi
                 let start_dt = DateTime::parse_from_rfc3339(&start).ok()?;
                 let finish_dt = DateTime::parse_from_rfc3339(&finish).ok()?;
                 return Some((start_dt, finish_dt));
-            }
+            },
             Ok(Event::Eof) => break,
             Err(_) => return None,
-            _ => {}
+            _ => {},
         }
 
         buf.clear();
@@ -233,12 +233,12 @@ fn parse_trx_content(content: &str) -> Option<TestSummary> {
                     if let (Some(start), Some(finish)) = (start, finish) {
                         summary.duration_text = parse_trx_duration(&start, &finish);
                     }
-                }
+                },
                 b"Counters" => {
                     summary.total = parse_usize_attr(&reader, &e, b"total");
                     summary.passed = parse_usize_attr(&reader, &e, b"passed");
                     summary.failed = parse_usize_attr(&reader, &e, b"failed");
-                }
+                },
                 b"UnitTestResult" => {
                     let outcome = extract_attr_value(&reader, &e, b"outcome")
                         .unwrap_or_else(|| "Unknown".to_string());
@@ -252,19 +252,19 @@ fn parse_trx_content(content: &str) -> Option<TestSummary> {
                         failed_test_name = extract_attr_value(&reader, &e, b"testName")
                             .unwrap_or_else(|| "unknown".to_string());
                     }
-                }
+                },
                 b"ErrorInfo" if in_failed_result => {
                     in_error_info = true;
-                }
+                },
                 b"Message" if in_failed_result && in_error_info => {
                     capture_field = Some(CaptureField::Message);
                     message_buf.clear();
-                }
+                },
                 b"StackTrace" if in_failed_result && in_error_info => {
                     capture_field = Some(CaptureField::StackTrace);
                     stack_buf.clear();
-                }
-                _ => {}
+                },
+                _ => {},
             },
             Ok(Event::Empty(e)) => match local_name(e.name().as_ref()) {
                 b"Times" => {
@@ -273,12 +273,12 @@ fn parse_trx_content(content: &str) -> Option<TestSummary> {
                     if let (Some(start), Some(finish)) = (start, finish) {
                         summary.duration_text = parse_trx_duration(&start, &finish);
                     }
-                }
+                },
                 b"Counters" => {
                     summary.total = parse_usize_attr(&reader, &e, b"total");
                     summary.passed = parse_usize_attr(&reader, &e, b"passed");
                     summary.failed = parse_usize_attr(&reader, &e, b"failed");
-                }
+                },
                 b"UnitTestResult" => {
                     let outcome = extract_attr_value(&reader, &e, b"outcome")
                         .unwrap_or_else(|| "Unknown".to_string());
@@ -290,8 +290,8 @@ fn parse_trx_content(content: &str) -> Option<TestSummary> {
                             details: Vec::new(),
                         });
                     }
-                }
-                _ => {}
+                },
+                _ => {},
             },
             Ok(Event::Text(e)) => {
                 if !in_failed_result {
@@ -303,9 +303,9 @@ fn parse_trx_content(content: &str) -> Option<TestSummary> {
                 match capture_field {
                     Some(CaptureField::Message) => message_buf.push_str(&text),
                     Some(CaptureField::StackTrace) => stack_buf.push_str(&text),
-                    None => {}
+                    None => {},
                 }
-            }
+            },
             Ok(Event::CData(e)) => {
                 if !in_failed_result {
                     buf.clear();
@@ -316,16 +316,16 @@ fn parse_trx_content(content: &str) -> Option<TestSummary> {
                 match capture_field {
                     Some(CaptureField::Message) => message_buf.push_str(&text),
                     Some(CaptureField::StackTrace) => stack_buf.push_str(&text),
-                    None => {}
+                    None => {},
                 }
-            }
+            },
             Ok(Event::End(e)) => match local_name(e.name().as_ref()) {
                 b"Message" | b"StackTrace" => {
                     capture_field = None;
-                }
+                },
                 b"ErrorInfo" => {
                     in_error_info = false;
-                }
+                },
                 b"UnitTestResult" if in_failed_result => {
                     let mut details = Vec::new();
 
@@ -352,12 +352,12 @@ fn parse_trx_content(content: &str) -> Option<TestSummary> {
                     capture_field = None;
                     message_buf.clear();
                     stack_buf.clear();
-                }
-                _ => {}
+                },
+                _ => {},
             },
             Ok(Event::Eof) => break,
             Err(_) => return None,
-            _ => {}
+            _ => {},
         }
 
         buf.clear();
@@ -384,8 +384,9 @@ fn parse_trx_content(content: &str) -> Option<TestSummary> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::time::Duration;
+
+    use super::*;
 
     #[test]
     fn test_parse_trx_content_extracts_passed_counts() {

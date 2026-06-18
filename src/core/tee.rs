@@ -1,8 +1,9 @@
 //! Raw output recovery -- saves unfiltered output to disk on command failure.
 
+use std::path::PathBuf;
+
 use super::constants::RTK_DATA_DIR;
 use crate::core::config::Config;
-use std::path::PathBuf;
 
 /// Minimum output size to tee (smaller outputs don't need recovery)
 const MIN_TEE_SIZE: usize = 500;
@@ -91,8 +92,8 @@ fn should_tee(
             if exit_code == 0 {
                 return None;
             }
-        }
-        TeeMode::Always => {}
+        },
+        TeeMode::Always => {},
     }
 
     if raw_len < MIN_TEE_SIZE {
@@ -270,8 +271,9 @@ impl Default for TeeConfig {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::fs;
+
+    use super::*;
 
     #[test]
     fn test_sanitize_slug() {

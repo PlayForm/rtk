@@ -1,14 +1,16 @@
 //! Filters Go command output — test results, build errors, vet warnings.
 
+use std::collections::HashMap;
+use std::ffi::OsString;
+
+use anyhow::{Context, Result};
+use serde::Deserialize;
+
 use crate::core::runner;
 use crate::core::tracking;
 use crate::core::truncate::CAP_ERRORS;
 use crate::core::utils::{exit_code_from_output, resolved_command, truncate};
 use crate::golangci_cmd;
-use anyhow::{Context, Result};
-use serde::Deserialize;
-use std::collections::HashMap;
-use std::ffi::OsString;
 
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
@@ -188,7 +190,7 @@ fn detect_go_tool_golangci_version() -> u32 {
                 &*stdout
             };
             golangci_cmd::parse_major_version(version_text)
-        }
+        },
         Err(_) => 1,
     }
 }
@@ -330,12 +332,12 @@ pub(crate) fn filter_go_test_json(output: &str) -> String {
                     }
                 }
                 continue;
-            }
+            },
             "build-fail" => {
                 // build-fail has ImportPath — we'll handle it when the package-level fail arrives
                 continue;
-            }
-            _ => {}
+            },
+            _ => {},
         }
 
         let package = event.package.unwrap_or_else(|| "unknown".to_string());
@@ -344,7 +346,7 @@ pub(crate) fn filter_go_test_json(output: &str) -> String {
         match event.action.as_str() {
             "pass" if event.test.is_some() => {
                 pkg_result.pass += 1;
-            }
+            },
             "fail" => {
                 if let Some(test) = &event.test {
                     // Individual test failure
@@ -368,10 +370,10 @@ pub(crate) fn filter_go_test_json(output: &str) -> String {
                     // (timeout, signal kill, panic before test execution, etc.)
                     pkg_result.package_failed = true;
                 }
-            }
+            },
             "skip" if event.test.is_some() => {
                 pkg_result.skip += 1;
-            }
+            },
             "output" => {
                 if let Some(output_text) = &event.output {
                     if let Some(test) = &event.test {
@@ -389,8 +391,8 @@ pub(crate) fn filter_go_test_json(output: &str) -> String {
                         }
                     }
                 }
-            }
-            _ => {} // run, pause, cont, etc.
+            },
+            _ => {}, // run, pause, cont, etc.
         }
     }
 
@@ -569,9 +571,7 @@ fn is_go_test_failure_line(line: &str) -> bool {
 }
 
 /// Filter go build output - show only errors
-pub(crate) fn filter_go_build(output: &str) -> String {
-    filter_go_build_with_exit(output, 0)
-}
+pub(crate) fn filter_go_build(output: &str) -> String { filter_go_build_with_exit(output, 0) }
 
 fn filter_go_build_with_exit(output: &str, exit_code: i32) -> String {
     let mut errors: Vec<String> = Vec::new();
@@ -600,9 +600,14 @@ fn filter_go_build_with_exit(output: &str, exit_code: i32) -> String {
     }
 
     if errors.len() > MAX_GO_BUILD_ERRORS {
-        result.push_str(&format!("\n… +{} more errors\n", errors.len() - MAX_GO_BUILD_ERRORS));
+        result.push_str(&format!(
+            "\n… +{} more errors\n",
+            errors.len() - MAX_GO_BUILD_ERRORS
+        ));
         let all_errors = errors.join("\n");
-        if let Some(hint) = crate::core::tee::force_tee_tail_hint(&all_errors, "go-build", MAX_GO_BUILD_ERRORS + 1) {
+        if let Some(hint) =
+            crate::core::tee::force_tee_tail_hint(&all_errors, "go-build", MAX_GO_BUILD_ERRORS + 1)
+        {
             result.push_str(&format!("  {}\n", hint));
         }
     }
@@ -723,9 +728,14 @@ fn filter_go_vet(output: &str) -> String {
     }
 
     if issues.len() > MAX_GO_VET_ISSUES {
-        result.push_str(&format!("\n… +{} more issues\n", issues.len() - MAX_GO_VET_ISSUES));
+        result.push_str(&format!(
+            "\n… +{} more issues\n",
+            issues.len() - MAX_GO_VET_ISSUES
+        ));
         let all_issues = issues.join("\n");
-        if let Some(hint) = crate::core::tee::force_tee_tail_hint(&all_issues, "go-vet", MAX_GO_VET_ISSUES + 1) {
+        if let Some(hint) =
+            crate::core::tee::force_tee_tail_hint(&all_issues, "go-vet", MAX_GO_VET_ISSUES + 1)
+        {
             result.push_str(&format!("  {}\n", hint));
         }
     }
@@ -1076,9 +1086,7 @@ utils.go:15:5: unreachable code"#;
         assert_eq!(compact_package_name("simple"), "simple");
     }
 
-    fn os(args: &[&str]) -> Vec<OsString> {
-        args.iter().map(OsString::from).collect()
-    }
+    fn os(args: &[&str]) -> Vec<OsString> { args.iter().map(OsString::from).collect() }
 
     #[test]
     fn test_match_go_tool_golangci_lint() {

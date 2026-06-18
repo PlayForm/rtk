@@ -142,63 +142,35 @@ pub fn print_period_table<T: PeriodStats>(data: &[T]) {
 // ── Trait Implementations ──
 
 impl PeriodStats for DayStats {
-    fn icon() -> &'static str {
-        "D"
-    }
+    fn icon() -> &'static str { "D" }
 
-    fn label() -> &'static str {
-        "Daily"
-    }
+    fn label() -> &'static str { "Daily" }
 
-    fn period(&self) -> String {
-        self.date.clone()
-    }
+    fn period(&self) -> String { self.date.clone() }
 
-    fn commands(&self) -> usize {
-        self.commands
-    }
+    fn commands(&self) -> usize { self.commands }
 
-    fn input_tokens(&self) -> usize {
-        self.input_tokens
-    }
+    fn input_tokens(&self) -> usize { self.input_tokens }
 
-    fn output_tokens(&self) -> usize {
-        self.output_tokens
-    }
+    fn output_tokens(&self) -> usize { self.output_tokens }
 
-    fn saved_tokens(&self) -> usize {
-        self.saved_tokens
-    }
+    fn saved_tokens(&self) -> usize { self.saved_tokens }
 
-    fn savings_pct(&self) -> f64 {
-        self.savings_pct
-    }
+    fn savings_pct(&self) -> f64 { self.savings_pct }
 
-    fn total_time_ms(&self) -> u64 {
-        self.total_time_ms
-    }
+    fn total_time_ms(&self) -> u64 { self.total_time_ms }
 
-    fn avg_time_ms(&self) -> u64 {
-        self.avg_time_ms
-    }
+    fn avg_time_ms(&self) -> u64 { self.avg_time_ms }
 
-    fn period_width() -> usize {
-        12
-    }
+    fn period_width() -> usize { 12 }
 
-    fn separator_width() -> usize {
-        74
-    }
+    fn separator_width() -> usize { 74 }
 }
 
 impl PeriodStats for WeekStats {
-    fn icon() -> &'static str {
-        "W"
-    }
+    fn icon() -> &'static str { "W" }
 
-    fn label() -> &'static str {
-        "Weekly"
-    }
+    fn label() -> &'static str { "Weekly" }
 
     fn period(&self) -> String {
         let start = if self.week_start.len() > 5 {
@@ -214,91 +186,49 @@ impl PeriodStats for WeekStats {
         format!("{} → {}", start, end)
     }
 
-    fn commands(&self) -> usize {
-        self.commands
-    }
+    fn commands(&self) -> usize { self.commands }
 
-    fn input_tokens(&self) -> usize {
-        self.input_tokens
-    }
+    fn input_tokens(&self) -> usize { self.input_tokens }
 
-    fn output_tokens(&self) -> usize {
-        self.output_tokens
-    }
+    fn output_tokens(&self) -> usize { self.output_tokens }
 
-    fn saved_tokens(&self) -> usize {
-        self.saved_tokens
-    }
+    fn saved_tokens(&self) -> usize { self.saved_tokens }
 
-    fn savings_pct(&self) -> f64 {
-        self.savings_pct
-    }
+    fn savings_pct(&self) -> f64 { self.savings_pct }
 
-    fn total_time_ms(&self) -> u64 {
-        self.total_time_ms
-    }
+    fn total_time_ms(&self) -> u64 { self.total_time_ms }
 
-    fn avg_time_ms(&self) -> u64 {
-        self.avg_time_ms
-    }
+    fn avg_time_ms(&self) -> u64 { self.avg_time_ms }
 
-    fn period_width() -> usize {
-        22
-    }
+    fn period_width() -> usize { 22 }
 
-    fn separator_width() -> usize {
-        82
-    }
+    fn separator_width() -> usize { 82 }
 }
 
 impl PeriodStats for MonthStats {
-    fn icon() -> &'static str {
-        "M"
-    }
+    fn icon() -> &'static str { "M" }
 
-    fn label() -> &'static str {
-        "Monthly"
-    }
+    fn label() -> &'static str { "Monthly" }
 
-    fn period(&self) -> String {
-        self.month.clone()
-    }
+    fn period(&self) -> String { self.month.clone() }
 
-    fn commands(&self) -> usize {
-        self.commands
-    }
+    fn commands(&self) -> usize { self.commands }
 
-    fn input_tokens(&self) -> usize {
-        self.input_tokens
-    }
+    fn input_tokens(&self) -> usize { self.input_tokens }
 
-    fn output_tokens(&self) -> usize {
-        self.output_tokens
-    }
+    fn output_tokens(&self) -> usize { self.output_tokens }
 
-    fn saved_tokens(&self) -> usize {
-        self.saved_tokens
-    }
+    fn saved_tokens(&self) -> usize { self.saved_tokens }
 
-    fn savings_pct(&self) -> f64 {
-        self.savings_pct
-    }
+    fn savings_pct(&self) -> f64 { self.savings_pct }
 
-    fn total_time_ms(&self) -> u64 {
-        self.total_time_ms
-    }
+    fn total_time_ms(&self) -> u64 { self.total_time_ms }
 
-    fn avg_time_ms(&self) -> u64 {
-        self.avg_time_ms
-    }
+    fn avg_time_ms(&self) -> u64 { self.avg_time_ms }
 
-    fn period_width() -> usize {
-        10
-    }
+    fn period_width() -> usize { 10 }
 
-    fn separator_width() -> usize {
-        74
-    }
+    fn separator_width() -> usize { 74 }
 }
 
 #[cfg(test)]

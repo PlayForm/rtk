@@ -1,12 +1,14 @@
 //! Runs a command and produces a heuristic summary of its output.
 
+use std::process::Command;
+
+use anyhow::{Context, Result};
+use regex::Regex;
+
 use crate::core::stream::exec_capture;
 use crate::core::tracking;
 use crate::core::truncate::CAP_WARNINGS;
 use crate::core::utils::truncate;
-use anyhow::{Context, Result};
-use regex::Regex;
-use std::process::Command;
 
 const MAX_SUMMARY_LIST: usize = CAP_WARNINGS;
 const MAX_SUMMARY_KEYS: usize = CAP_WARNINGS;
@@ -249,19 +251,22 @@ fn summarize_json(output: &str, result: &mut Vec<String>) {
         match &value {
             serde_json::Value::Array(arr) => {
                 result.push(format!("   Array with {} items", arr.len()));
-            }
+            },
             serde_json::Value::Object(obj) => {
                 result.push(format!("   Object with {} keys:", obj.len()));
                 for key in obj.keys().take(MAX_SUMMARY_KEYS) {
                     result.push(format!("   • {}", key));
                 }
                 if obj.len() > MAX_SUMMARY_KEYS {
-                    result.push(format!("   ... +{} more keys", obj.len() - MAX_SUMMARY_KEYS));
+                    result.push(format!(
+                        "   ... +{} more keys",
+                        obj.len() - MAX_SUMMARY_KEYS
+                    ));
                 }
-            }
+            },
             _ => {
                 result.push(format!("   {}", truncate(&value.to_string(), 100)));
-            }
+            },
         }
     } else {
         result.push("   (Invalid JSON)".to_string());

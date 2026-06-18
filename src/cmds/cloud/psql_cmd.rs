@@ -3,12 +3,13 @@
 //! Detects table and expanded display formats, strips borders/padding,
 //! and produces compact tab-separated or key=value output.
 
-use crate::core::runner::{self, RunOptions};
-use crate::core::truncate::CAP_LIST;
-use crate::core::utils::resolved_command;
 use anyhow::Result;
 use lazy_static::lazy_static;
 use regex::Regex;
+
+use crate::core::runner::{self, RunOptions};
+use crate::core::truncate::CAP_LIST;
+use crate::core::utils::resolved_command;
 
 const MAX_TABLE_ROWS: usize = CAP_LIST;
 const MAX_EXPANDED_RECORDS: usize = CAP_LIST;
@@ -67,9 +68,7 @@ fn is_table_format(output: &str) -> bool {
     })
 }
 
-fn is_expanded_format(output: &str) -> bool {
-    EXPANDED_RECORD.is_match(output)
-}
+fn is_expanded_format(output: &str) -> bool { EXPANDED_RECORD.is_match(output) }
 
 /// Filter psql table format:
 /// - Strip separator lines (----+----)
@@ -329,9 +328,7 @@ name | bob
         assert!(!result.contains("(1 row)"));
     }
 
-    fn count_tokens(text: &str) -> usize {
-        text.split_whitespace().count()
-    }
+    fn count_tokens(text: &str) -> usize { text.split_whitespace().count() }
 
     #[test]
     fn test_table_token_savings() {

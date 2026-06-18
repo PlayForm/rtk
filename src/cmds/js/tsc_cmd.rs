@@ -1,12 +1,14 @@
 //! Filters TypeScript compiler errors, grouping them by file and error code.
 
-use crate::core::runner;
-use crate::core::stream::{BlockHandler, BlockStreamFilter};
-use crate::core::utils::{resolved_command, tool_exists, truncate};
+use std::collections::{HashMap, HashSet};
+
 use anyhow::Result;
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::collections::{HashMap, HashSet};
+
+use crate::core::runner;
+use crate::core::stream::{BlockHandler, BlockStreamFilter};
+use crate::core::utils::{resolved_command, tool_exists, truncate};
 
 lazy_static! {
     static ref TSC_ERROR: Regex =
@@ -59,9 +61,7 @@ impl TscHandler {
 }
 
 impl BlockHandler for TscHandler {
-    fn should_skip(&mut self, line: &str) -> bool {
-        line.starts_with("Found ")
-    }
+    fn should_skip(&mut self, line: &str) -> bool { line.starts_with("Found ") }
 
     fn is_block_start(&mut self, line: &str) -> bool {
         if let Some(caps) = TSC_ERROR.captures(line) {

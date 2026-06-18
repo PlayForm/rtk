@@ -4,10 +4,11 @@
 //! `rails test`, filtering down to failures/errors and the summary line.
 //! Uses `ruby_exec("rake")` to auto-detect `bundle exec`.
 
+use anyhow::Result;
+
 use crate::core::runner;
 use crate::core::truncate::CAP_WARNINGS;
 use crate::core::utils::{ruby_exec, strip_ansi};
-use anyhow::Result;
 
 const MAX_RAKE_FAILURES: usize = CAP_WARNINGS;
 
@@ -135,7 +136,7 @@ fn filter_minitest_output(output: &str) -> String {
             ParseState::Header | ParseState::Running => {
                 // Skip seed line, blank lines, progress dots
                 continue;
-            }
+            },
             ParseState::Failures => {
                 if is_failure_header(trimmed) {
                     if !current_failure.is_empty() {
@@ -149,8 +150,8 @@ fn filter_minitest_output(output: &str) -> String {
                 } else if !trimmed.is_empty() {
                     current_failure.push(line.to_string());
                 }
-            }
-            ParseState::Summary => {}
+            },
+            ParseState::Summary => {},
         }
     }
 
@@ -250,7 +251,7 @@ fn parse_minitest_summary(summary: &str) -> (usize, usize, usize, usize, usize) 
                     "failures" | "failure" => failures = n,
                     "errors" | "error" => errors = n,
                     "skips" | "skip" => skips = n,
-                    _ => {}
+                    _ => {},
                 }
             }
         }
@@ -461,9 +462,7 @@ NoMethodError: undefined method `blah'
 
     // ── select_runner tests ─────────────────────────────
 
-    fn args(s: &str) -> Vec<String> {
-        s.split_whitespace().map(String::from).collect()
-    }
+    fn args(s: &str) -> Vec<String> { s.split_whitespace().map(String::from).collect() }
 
     #[test]
     fn test_select_runner_single_file_uses_rake() {

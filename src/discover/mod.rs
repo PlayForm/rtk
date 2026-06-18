@@ -6,9 +6,9 @@ pub mod registry;
 mod report;
 pub mod rules;
 
-use anyhow::Result;
 use std::collections::HashMap;
 
+use anyhow::Result;
 use provider::{ClaudeProvider, SessionProvider};
 use registry::{
     category_avg_tokens, classify_command, split_command_chain, strip_disabled_prefix,
@@ -89,7 +89,7 @@ pub fn run(
                 }
                 parse_errors += 1;
                 continue;
-            }
+            },
         };
 
         for ext_cmd in &extracted {
@@ -106,10 +106,10 @@ pub fn run(
                             rtk_disabled_count += 1;
                             let display = truncate_command(actual_cmd);
                             *rtk_disabled_cmds.entry(display).or_insert(0) += 1;
-                        }
+                        },
                         _ => {
                             // RTK_DISABLED on unsupported/ignored command — not interesting
-                        }
+                        },
                     }
                     continue;
                 }
@@ -158,7 +158,7 @@ pub fn run(
                             .entry(format!("{}:{:?}", display_name, status))
                             .or_insert(0);
                         *entry += 1;
-                    }
+                    },
                     Classification::Unsupported { base_command } => {
                         let bucket = unsupported_map.entry(base_command).or_insert_with(|| {
                             UnsupportedBucket {
@@ -167,14 +167,14 @@ pub fn run(
                             }
                         });
                         bucket.count += 1;
-                    }
+                    },
                     Classification::Ignored => {
                         // Check if it starts with "rtk "
                         if part.trim().starts_with("rtk ") {
                             already_rtk += 1;
                         }
                         // Otherwise just skip
-                    }
+                    },
                 }
             }
         }

@@ -1,15 +1,17 @@
 //! Filters cargo output — build errors, test results, clippy warnings.
 
+use std::cmp::Ordering;
+use std::collections::HashMap;
+use std::ffi::OsString;
+use std::sync::OnceLock;
+
+use anyhow::Result;
+
 use crate::core::args_utils;
 use crate::core::runner;
 use crate::core::stream::{BlockHandler, BlockStreamFilter, StreamFilter};
 use crate::core::truncate::{CAP_ERRORS, CAP_LIST, CAP_WARNINGS};
 use crate::core::utils::{resolved_command, truncate};
-use anyhow::Result;
-use std::cmp::Ordering;
-use std::collections::HashMap;
-use std::ffi::OsString;
-use std::sync::OnceLock;
 
 #[derive(Debug, Clone)]
 pub enum CargoCommand {
@@ -1015,7 +1017,10 @@ pub(crate) fn filter_cargo_test(output: &str) -> String {
             result.push_str(&format!("{}. {}\n", i + 1, truncate(failure, 200)));
         }
         if failures.len() > MAX_FAILURES {
-            result.push_str(&format!("\n… +{} more failures\n", failures.len() - MAX_FAILURES));
+            result.push_str(&format!(
+                "\n… +{} more failures\n",
+                failures.len() - MAX_FAILURES
+            ));
             let all_failures = failures.join("\n\n");
             if let Some(hint) =
                 crate::core::tee::force_tee_hint(&all_failures, "cargo-test-failures")
@@ -1187,8 +1192,7 @@ fn filter_cargo_clippy(output: &str) -> String {
                 .map(|b| b.join("\n"))
                 .collect::<Vec<_>>()
                 .join("\n\n");
-            if let Some(hint) =
-                crate::core::tee::force_tee_hint(&all_blocks, "cargo-clippy-errors")
+            if let Some(hint) = crate::core::tee::force_tee_hint(&all_blocks, "cargo-clippy-errors")
             {
                 result.push_str(&format!("  {}\n", hint));
             }

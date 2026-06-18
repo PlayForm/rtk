@@ -75,19 +75,19 @@ impl OutputParser for VitestParser {
                 };
 
                 ParseResult::Full(result)
-            }
+            },
             Err(e) => {
                 // Tier 2: Try regex extraction (only fires if user overrides --reporter flag)
                 match extract_stats_regex(input) {
                     Some(result) => {
                         ParseResult::Degraded(result, vec![format!("JSON parse failed: {}", e)])
-                    }
+                    },
                     None => {
                         // Tier 3: Passthrough
                         ParseResult::Passthrough(truncate_passthrough(input))
-                    }
+                    },
                 }
-            }
+            },
         }
     }
 }
@@ -217,7 +217,7 @@ pub fn run_test(command: &Commands, args: &[String], verbose: u8) -> Result<i32>
                 // Enable JSON structured output
                 .arg("--reporter=json");
             (framework, cmd)
-        }
+        },
         Commands::Jest { .. } => {
             let framework = "jest";
             let mut cmd = package_manager_exec(framework);
@@ -227,7 +227,7 @@ pub fn run_test(command: &Commands, args: &[String], verbose: u8) -> Result<i32>
                 // Enable JSON structured output
                 .arg("--json");
             (framework, cmd)
-        }
+        },
         _ => unreachable!(),
     };
 
@@ -255,22 +255,24 @@ pub fn run_test(command: &Commands, args: &[String], verbose: u8) -> Result<i32>
                 eprintln!("{} run (Tier 1: Full JSON parse)", framework);
             }
             data.format(mode)
-        }
+        },
         ParseResult::Degraded(data, warnings) => {
             if verbose > 0 {
                 emit_degradation_warning(framework, &warnings.join(", "));
             }
             data.format(mode)
-        }
+        },
         ParseResult::Passthrough(raw) => {
             emit_passthrough_warning(framework, "All parsing tiers failed");
             raw
-        }
+        },
     };
 
-    if let Some(hint) =
-        crate::core::tee::tee_and_hint(&combined, format!("{}_run", framework).as_str(), result.exit_code)
-    {
+    if let Some(hint) = crate::core::tee::tee_and_hint(
+        &combined,
+        format!("{}_run", framework).as_str(),
+        result.exit_code,
+    ) {
         println!("{}\n{}", filtered, hint);
     } else {
         println!("{}", filtered);

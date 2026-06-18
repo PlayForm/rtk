@@ -1,12 +1,12 @@
 //! Filters Playwright E2E test output to show only failures.
 
-use crate::core::stream::exec_capture;
-use crate::core::tracking;
-use crate::core::utils::{detect_package_manager, resolved_command, strip_ansi};
 use anyhow::{Context, Result};
 use regex::Regex;
 use serde::Deserialize;
 
+use crate::core::stream::exec_capture;
+use crate::core::tracking;
+use crate::core::utils::{detect_package_manager, resolved_command, strip_ansi};
 use crate::parser::{
     emit_degradation_warning, emit_passthrough_warning, truncate_passthrough, FormatMode,
     OutputParser, ParseResult, TestFailure, TestResult, TokenFormatter,
@@ -104,19 +104,19 @@ impl OutputParser for PlaywrightParser {
                 };
 
                 ParseResult::Full(result)
-            }
+            },
             Err(e) => {
                 // Tier 2: Try regex extraction
                 match extract_playwright_regex(input) {
                     Some(result) => {
                         ParseResult::Degraded(result, vec![format!("JSON parse failed: {}", e)])
-                    }
+                    },
                     None => {
                         // Tier 3: Passthrough
                         ParseResult::Passthrough(truncate_passthrough(input))
-                    }
+                    },
                 }
-            }
+            },
         }
     }
 }
@@ -185,7 +185,7 @@ fn extract_playwright_regex(output: &str) -> Option<TestResult> {
             "passed" => passed = count,
             "failed" => failed = count,
             "skipped" => skipped = count,
-            _ => {}
+            _ => {},
         }
     }
 
@@ -252,17 +252,17 @@ pub fn run(args: &[String], verbose: u8) -> Result<i32> {
             let mut c = resolved_command("pnpm");
             c.arg("exec").arg("--").arg("playwright");
             c
-        }
+        },
         "yarn" => {
             let mut c = resolved_command("yarn");
             c.arg("exec").arg("--").arg("playwright");
             c
-        }
+        },
         _ => {
             let mut c = resolved_command("npx");
             c.arg("--no-install").arg("--").arg("playwright");
             c
-        }
+        },
     };
 
     // Only inject --reporter=json for `playwright test` runs
@@ -301,17 +301,17 @@ pub fn run(args: &[String], verbose: u8) -> Result<i32> {
                 eprintln!("playwright test (Tier 1: Full JSON parse)");
             }
             data.format(mode)
-        }
+        },
         ParseResult::Degraded(data, warnings) => {
             if verbose > 0 {
                 emit_degradation_warning("playwright", &warnings.join(", "));
             }
             data.format(mode)
-        }
+        },
         ParseResult::Passthrough(raw) => {
             emit_passthrough_warning("playwright", "All parsing tiers failed");
             raw
-        }
+        },
     };
 
     if let Some(hint) = crate::core::tee::tee_and_hint(&raw, "playwright", result.exit_code) {

@@ -3,10 +3,11 @@
 pub mod detector;
 pub mod report;
 
-use crate::discover::provider::{ClaudeProvider, SessionProvider};
 use anyhow::Result;
 use detector::{deduplicate_corrections, find_corrections, CommandExecution};
 use report::{format_console_report, write_rules_file};
+
+use crate::discover::provider::{ClaudeProvider, SessionProvider};
 
 pub fn run(
     project: Option<String>,
@@ -103,7 +104,7 @@ pub fn run(
                 })).collect::<Vec<_>>(),
             });
             println!("{}", serde_json::to_string_pretty(&json)?);
-        }
+        },
         _ => {
             // Text output
             let report = format_console_report(&rules, filtered.len(), sessions.len(), since);
@@ -114,7 +115,7 @@ pub fn run(
                 write_rules_file(&rules, rules_path)?;
                 println!("\nWritten to: {}", rules_path);
             }
-        }
+        },
     }
 
     Ok(())

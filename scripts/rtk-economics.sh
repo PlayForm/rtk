@@ -19,31 +19,31 @@ echo "════════════════════════�
 echo
 
 # Check if ccusage is available
-if ! command -v ccusage &> /dev/null; then
-    echo -e "${RED}Error: ccusage not found${NC}"
-    echo "Install: npm install -g @anthropics/claude-code-usage"
-    exit 1
+if ! command -v ccusage &>/dev/null; then
+	echo -e "${RED}Error: ccusage not found${NC}"
+	echo "Install: npm install -g @anthropics/claude-code-usage"
+	exit 1
 fi
 
 # Check if rtk is available
-if ! command -v rtk &> /dev/null; then
-    echo -e "${RED}Error: rtk not found${NC}"
-    echo "Install: cargo install --path ."
-    exit 1
+if ! command -v rtk &>/dev/null; then
+	echo -e "${RED}Error: rtk not found${NC}"
+	echo "Install: cargo install --path ."
+	exit 1
 fi
 
 # Fetch ccusage data
 echo -e "${YELLOW}Fetching token usage data from ccusage...${NC}"
 if ! ccusage_json=$(ccusage monthly --json 2>/dev/null); then
-    echo -e "${RED}Failed to fetch ccusage data${NC}"
-    exit 1
+	echo -e "${RED}Failed to fetch ccusage data${NC}"
+	exit 1
 fi
 
 # Fetch rtk data
 echo -e "${YELLOW}Fetching token savings data from rtk...${NC}"
 if ! rtk_json=$(rtk gain --monthly --format json 2>/dev/null); then
-    echo -e "${RED}Failed to fetch rtk data${NC}"
-    exit 1
+	echo -e "${RED}Failed to fetch rtk data${NC}"
+	exit 1
 fi
 
 echo
@@ -69,33 +69,33 @@ saved_cost=$(echo "scale=2; $rtk_saved * 0.0001" | bc 2>/dev/null || echo "0")
 total_without_rtk=$(echo "scale=2; $ccusage_cost + $saved_cost" | bc 2>/dev/null || echo "$ccusage_cost")
 
 # Calculate savings percentage
-if (( $(echo "$total_without_rtk > 0" | bc -l) )); then
-    savings_pct=$(echo "scale=1; ($saved_cost / $total_without_rtk) * 100" | bc 2>/dev/null || echo "0")
+if (($(echo "$total_without_rtk > 0" | bc -l))); then
+	savings_pct=$(echo "scale=1; ($saved_cost / $total_without_rtk) * 100" | bc 2>/dev/null || echo "0")
 else
-    savings_pct="0"
+	savings_pct="0"
 fi
 
 # Calculate cost per command
 if [ "$rtk_commands" -gt 0 ]; then
-    cost_per_cmd_with=$(echo "scale=2; $ccusage_cost / $rtk_commands" | bc 2>/dev/null || echo "0")
-    cost_per_cmd_without=$(echo "scale=2; $total_without_rtk / $rtk_commands" | bc 2>/dev/null || echo "0")
+	cost_per_cmd_with=$(echo "scale=2; $ccusage_cost / $rtk_commands" | bc 2>/dev/null || echo "0")
+	cost_per_cmd_without=$(echo "scale=2; $total_without_rtk / $rtk_commands" | bc 2>/dev/null || echo "0")
 else
-    cost_per_cmd_with="N/A"
-    cost_per_cmd_without="N/A"
+	cost_per_cmd_with="N/A"
+	cost_per_cmd_without="N/A"
 fi
 
 # Format numbers
 format_number() {
-    local num=$1
-    if [ "$num" = "0" ] || [ "$num" = "N/A" ]; then
-        echo "$num"
-    else
-        echo "$num" | numfmt --to=si 2>/dev/null || echo "$num"
-    fi
+	local num=$1
+	if [ "$num" = "0" ] || [ "$num" = "N/A" ]; then
+		echo "$num"
+	else
+		echo "$num" | numfmt --to=si 2>/dev/null || echo "$num"
+	fi
 }
 
 # Display report
-cat << EOF
+cat <<EOF
 ${GREEN}💰 Economic Impact Report - $CURRENT_MONTH${NC}
 ════════════════════════════════════════════════════════════════
 

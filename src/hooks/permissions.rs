@@ -1,8 +1,10 @@
+use std::path::PathBuf;
+
+use serde_json::Value;
+
 use super::constants::{CLAUDE_DIR, CURSOR_DIR, GEMINI_DIR, SETTINGS_JSON, SETTINGS_LOCAL_JSON};
 use crate::core::stream::exec_capture;
 use crate::discover::lexer::split_for_permissions;
-use serde_json::Value;
-use std::path::PathBuf;
 
 /// Verdict from checking a command against Claude Code's permission rules.
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -22,9 +24,7 @@ pub enum PermissionVerdict {
 /// Precedence: Deny > Ask > Allow > Default (ask).
 /// Returns `Default` when no rules match — callers should treat this as ask
 /// to match Claude Code's least-privilege default.
-pub fn check_command(cmd: &str) -> PermissionVerdict {
-    check_command_for(cmd, Host::Claude)
-}
+pub fn check_command(cmd: &str) -> PermissionVerdict { check_command_for(cmd, Host::Claude) }
 
 /// The agent host whose own permission settings should be consulted.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -193,7 +193,7 @@ fn read_json(path: &std::path::Path) -> Option<Value> {
                 path.display()
             );
             None
-        }
+        },
     }
 }
 
@@ -400,9 +400,7 @@ fn glob_matches(cmd: &str, pattern: &str) -> bool {
     true
 }
 
-fn split_compound_command(cmd: &str) -> Vec<&str> {
-    split_for_permissions(cmd)
-}
+fn split_compound_command(cmd: &str) -> Vec<&str> { split_for_permissions(cmd) }
 
 #[cfg(test)]
 mod tests {

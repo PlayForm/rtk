@@ -222,7 +222,7 @@ fn extract_base_command(cmd: &str) -> &str {
             } else {
                 parts[0]
             }
-        }
+        },
     }
 }
 
@@ -417,7 +417,7 @@ fn strip_trailing_redirects(cmd: &str) -> (&str, &str) {
         match tokens[i].kind {
             TokenKind::Redirect => {
                 redir_boundary = i;
-            }
+            },
             TokenKind::Arg => {
                 if i > 0 && tokens[i - 1].kind == TokenKind::Redirect {
                     redir_boundary = i - 1;
@@ -425,7 +425,7 @@ fn strip_trailing_redirects(cmd: &str) -> (&str, &str) {
                 } else {
                     break;
                 }
-            }
+            },
             _ => break,
         }
     }
@@ -554,7 +554,7 @@ fn rewrite_compound(
                 while seg_start < cmd.len() && cmd.as_bytes().get(seg_start) == Some(&b' ') {
                     seg_start += 1;
                 }
-            }
+            },
             TokenKind::Pipe => {
                 let seg = cmd[seg_start..tok.offset].trim();
                 let is_pipe_incompatible = seg.starts_with("find ")
@@ -583,14 +583,14 @@ fn rewrite_compound(
                         result.push(' ');
                         result.push_str(cmd[tok.offset..next_op.offset].trim());
                         seg_start = next_op.offset;
-                    }
+                    },
                     None => {
                         result.push(' ');
                         result.push_str(cmd[tok.offset..].trim_start());
                         return if any_changed { Some(result) } else { None };
-                    }
+                    },
                 }
-            }
+            },
             TokenKind::Shellism if tok.value == "&" => {
                 let seg = cmd[seg_start..tok.offset].trim();
                 let rewritten = rewrite_segment(seg, excluded, transparent_prefixes)
@@ -604,8 +604,8 @@ fn rewrite_compound(
                 while seg_start < cmd.len() && cmd.as_bytes().get(seg_start) == Some(&b' ') {
                     seg_start += 1;
                 }
-            }
-            _ => {}
+            },
+            _ => {},
         }
     }
 
@@ -686,7 +686,7 @@ fn compile_exclude_patterns(patterns: &[String]) -> Vec<ExcludePattern> {
                         pattern, e
                     );
                     ExcludePattern::Prefix(trimmed.to_string())
-                }
+                },
             })
         })
         .collect()
@@ -806,7 +806,7 @@ fn rewrite_segment_inner(
                 return None;
             }
             rtk_equivalent
-        }
+        },
         _ => return None,
     };
 
@@ -1017,7 +1017,7 @@ mod tests {
         match classify_command("htop -d 10") {
             Classification::Unsupported { base_command } => {
                 assert_eq!(base_command, "htop");
-            }
+            },
             other => panic!("expected Unsupported, got {:?}", other),
         }
     }
@@ -1107,7 +1107,7 @@ mod tests {
         for subcmd in ["build", "test", "clippy", "check", "fmt"] {
             let cmd = format!("cargo {subcmd}");
             match classify_command(&cmd) {
-                Classification::Supported { .. } => {}
+                Classification::Supported { .. } => {},
                 other => panic!("cargo {subcmd} should be Supported, got {other:?}"),
             }
         }
@@ -1122,7 +1122,7 @@ mod tests {
         ] {
             let cmd = format!("git {subcmd}");
             match classify_command(&cmd) {
-                Classification::Supported { .. } => {}
+                Classification::Supported { .. } => {},
                 other => panic!("git {subcmd} should be Supported, got {other:?}"),
             }
         }

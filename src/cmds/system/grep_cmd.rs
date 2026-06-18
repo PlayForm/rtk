@@ -1,12 +1,14 @@
 //! Filters grep output by grouping matches by file.
 
+use std::collections::HashMap;
+
+use anyhow::{Context, Result};
+use regex::Regex;
+
 use crate::core::stream::exec_capture;
 use crate::core::tracking;
 use crate::core::utils::resolved_command;
 use crate::core::{args_utils, config};
-use anyhow::{Context, Result};
-use regex::Regex;
-use std::collections::HashMap;
 
 /// Short single-char flags that consume one following token (or inline remainder)
 /// as their value. `-e` is handled separately — its value goes to `patterns`.
@@ -197,7 +199,7 @@ fn extract_pattern_path<T: AsRef<str>>(args: &[T]) -> (Vec<String>, Vec<String>,
                         flags.push(format!("-{}", s));
                     }
                     i += 1;
-                }
+                },
                 ClusterResult::ValueTaking {
                     prefix,
                     flag,
@@ -229,12 +231,12 @@ fn extract_pattern_path<T: AsRef<str>>(args: &[T]) -> (Vec<String>, Vec<String>,
                             i += 1;
                         }
                     }
-                }
+                },
             },
             _ => {
                 positionals.push(arg.to_string());
                 i += 1;
-            }
+            },
         }
     }
 

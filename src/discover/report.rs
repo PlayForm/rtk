@@ -1,11 +1,13 @@
 //! Data types for reporting which commands RTK can and cannot optimize.
 
+use std::path::Path;
+
+use serde::Serialize;
+
 use crate::hooks::constants::{
     COPILOT_HOOK_FILE, CURSOR_DIR, GITHUB_DIR, HERMES_DIR, HERMES_PLUGINS_SUBDIR,
     HERMES_PLUGIN_MANIFEST_FILE, HERMES_PLUGIN_NAME, HOOKS_SUBDIR, REWRITE_HOOK_FILE,
 };
-use serde::Serialize;
-use std::path::Path;
 
 /// RTK support status for a command.
 #[derive(Debug, Serialize, Clone, Copy, PartialEq, Eq)]
@@ -115,9 +117,7 @@ impl DiscoverReport {
             .sum()
     }
 
-    pub fn total_supported_count(&self) -> usize {
-        self.supported.iter().map(|s| s.count).sum()
-    }
+    pub fn total_supported_count(&self) -> usize { self.supported.iter().map(|s| s.count).sum() }
 }
 
 /// Format report as text.

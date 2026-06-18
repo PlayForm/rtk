@@ -1,15 +1,17 @@
 //! Optional usage ping so we know which commands people run most.
 
+use std::fmt::Write as FmtWrite;
+use std::io::Write as IoWrite;
+use std::path::PathBuf;
+use std::sync::OnceLock;
+
+use sha2::{Digest, Sha256};
+
 use super::constants::RTK_DATA_DIR;
 use crate::core::config;
 use crate::core::tracking;
 use crate::hooks::constants::CLAUDE_DIR;
 use crate::hooks::init::resolve_claude_dir;
-use sha2::{Digest, Sha256};
-use std::fmt::Write as FmtWrite;
-use std::io::Write as IoWrite;
-use std::path::PathBuf;
-use std::sync::OnceLock;
 
 static CACHED_SALT: OnceLock<String> = OnceLock::new();
 
@@ -38,7 +40,7 @@ pub fn maybe_ping() {
 
     // RGPD: require explicit consent before any telemetry
     match cfg.telemetry.consent_given {
-        Some(true) => {}
+        Some(true) => {},
         Some(false) | None => return,
     }
 
@@ -446,9 +448,7 @@ pub fn telemetry_marker_path() -> PathBuf {
     data_dir.join(".telemetry_last_ping")
 }
 
-fn touch_marker(path: &PathBuf) {
-    let _ = std::fs::write(path, b"");
-}
+fn touch_marker(path: &PathBuf) { let _ = std::fs::write(path, b""); }
 
 #[cfg(test)]
 mod tests {

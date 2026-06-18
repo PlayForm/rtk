@@ -11,12 +11,14 @@
 //! - Content changes invalidate trust (re-review required)
 //! - `RTK_TRUST_PROJECT_FILTERS=1` overrides for CI pipelines
 
-use super::integrity;
-use crate::core::constants::{RTK_DATA_DIR, TRUSTED_FILTERS_JSON};
-use anyhow::{Context, Result};
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
+
+use anyhow::{Context, Result};
+use serde::{Deserialize, Serialize};
+
+use super::integrity;
+use crate::core::constants::{RTK_DATA_DIR, TRUSTED_FILTERS_JSON};
 
 // ---------------------------------------------------------------------------
 // Types
@@ -119,7 +121,7 @@ pub fn check_trust(filter_path: &Path) -> Result<TrustStatus> {
                 e
             );
             TrustStore::default()
-        }
+        },
     };
 
     let entry = match store.trusted.get(&key) {
@@ -280,8 +282,9 @@ fn print_risk_summary(content: &str) {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use tempfile::TempDir;
+
+    use super::*;
 
     /// Helper: create a temporary trust store in a temp dir.
     /// Overrides the store path via a scoped env var (not possible with
@@ -411,7 +414,7 @@ mod tests {
                 assert_ne!(expected, actual);
                 assert_eq!(expected.len(), 64);
                 assert_eq!(actual.len(), 64);
-            }
+            },
             other => panic!("Expected ContentChanged, got {:?}", other),
         }
     }

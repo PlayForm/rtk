@@ -1,13 +1,15 @@
 //! Reads Claude Code session logs from disk and streams their command history.
 
-use crate::hooks::init::resolve_claude_dir;
-use anyhow::{Context, Result};
 use std::collections::HashMap;
 use std::fs;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
+
+use anyhow::{Context, Result};
 use walkdir::WalkDir;
+
+use crate::hooks::init::resolve_claude_dir;
 
 /// A command extracted from a session file.
 #[derive(Debug)]
@@ -209,7 +211,7 @@ impl SessionProvider for ClaudeProvider {
                             }
                         }
                     }
-                }
+                },
                 "user" => {
                     // Look for tool_result blocks
                     if let Some(content) =
@@ -241,8 +243,8 @@ impl SessionProvider for ClaudeProvider {
                             }
                         }
                     }
-                }
-                _ => {}
+                },
+                _ => {},
             }
         }
 
@@ -269,8 +271,9 @@ impl SessionProvider for ClaudeProvider {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::io::Write;
+
+    use super::*;
 
     fn make_jsonl(lines: &[&str]) -> tempfile::NamedTempFile {
         let mut f = tempfile::NamedTempFile::new().unwrap();

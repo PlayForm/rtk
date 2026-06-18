@@ -1,9 +1,10 @@
 //! Filters Prettier output to show only files that need formatting.
 
+use anyhow::Result;
+
 use crate::core::runner::{self, RunOptions};
 use crate::core::truncate::CAP_WARNINGS;
 use crate::core::utils::package_manager_exec;
-use anyhow::Result;
 
 pub fn run(args: &[String], verbose: u8) -> Result<i32> {
     let mut cmd = package_manager_exec("prettier");
