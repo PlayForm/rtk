@@ -2,9 +2,7 @@
 description = "Compact hadolint Dockerfile linting output"
 match_command = "^hadolint\\b"
 strip_ansi = true
-strip_lines_matching = [
-  "^\\s*$",
-]
+strip_lines_matching = ["^\\s*$"]
 truncate_lines_at = 120
 max_lines = 40
 

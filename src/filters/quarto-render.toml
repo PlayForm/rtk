@@ -3,17 +3,17 @@ description = "Compact quarto render output"
 match_command = "^quarto\\s+render"
 strip_ansi = true
 strip_lines_matching = [
-  "^\\s*$",
-  "^\\s*processing file:",
-  "^\\s*\\d+/\\d+\\s",
-  "^\\s*running",
-  "^\\s*Rendering",
-  "^pandoc ",
-  "^  Validating",
-  "^  Resolving",
+	"^\\s*$",
+	"^\\s*processing file:",
+	"^\\s*\\d+/\\d+\\s",
+	"^\\s*running",
+	"^\\s*Rendering",
+	"^pandoc ",
+	"^  Validating",
+	"^  Resolving",
 ]
 match_output = [
-  { pattern = "Output created:", message = "ok (output created)" },
+	{ pattern = "Output created:", message = "ok (output created)" },
 ]
 max_lines = 20
 

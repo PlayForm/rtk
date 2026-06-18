@@ -2,13 +2,9 @@
 description = "Compact swift build output — short-circuit on success, strip Compiling/Linking"
 match_command = "^swift\\s+build\\b"
 strip_ansi = true
-strip_lines_matching = [
-  "^\\s*$",
-  "^Compiling ",
-  "^Linking ",
-]
+strip_lines_matching = ["^\\s*$", "^Compiling ", "^Linking "]
 match_output = [
-  { pattern = "Build complete!", message = "ok (build complete)", unless = "warning:|error:" },
+	{ pattern = "Build complete!", message = "ok (build complete)", unless = "warning:|error:" },
 ]
 max_lines = 40
 

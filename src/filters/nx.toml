@@ -3,13 +3,13 @@ description = "Compact Nx monorepo output — strip task graph noise, keep resul
 match_command = "^(pnpm\\s+)?nx\\b"
 strip_ansi = true
 strip_lines_matching = [
-  "^\\s*$",
-  "^\\s*>\\s*NX\\s+Running target",
-  "^\\s*>\\s*NX\\s+Nx read the output",
-  "^\\s*>\\s*NX\\s+View logs",
-  "^———————",
-  "^—————————",
-  "^\\s+Nx \\(powered by",
+	"^\\s*$",
+	"^\\s*>\\s*NX\\s+Running target",
+	"^\\s*>\\s*NX\\s+Nx read the output",
+	"^\\s*>\\s*NX\\s+View logs",
+	"^———————",
+	"^—————————",
+	"^\\s+Nx \\(powered by",
 ]
 truncate_lines_at = 150
 max_lines = 60

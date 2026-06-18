@@ -3,11 +3,11 @@ description = "Compact ping output — strip per-packet lines, keep summary"
 match_command = "^ping\\b"
 strip_ansi = true
 strip_lines_matching = [
-  "^PING ",
-  "^Pinging ",
-  "^\\d+ bytes from ",
-  "^Reply from .+: bytes=",
-  "^\\s*$",
+	"^PING ",
+	"^Pinging ",
+	"^\\d+ bytes from ",
+	"^Reply from .+: bytes=",
+	"^\\s*$",
 ]
 tail_lines = 4
 

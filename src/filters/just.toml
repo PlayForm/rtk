@@ -2,11 +2,7 @@
 description = "Compact just task runner output — strip recipe headers, keep command output"
 match_command = "^just\\b"
 strip_ansi = true
-strip_lines_matching = [
-  "^\\s*$",
-  "^\\s*Available recipes:",
-  "^\\s*just --list",
-]
+strip_lines_matching = ["^\\s*$", "^\\s*Available recipes:", "^\\s*just --list"]
 truncate_lines_at = 150
 max_lines = 50
 

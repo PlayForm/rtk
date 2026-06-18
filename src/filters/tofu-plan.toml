@@ -3,11 +3,11 @@ description = "Compact OpenTofu plan output"
 match_command = "^tofu\\s+plan(\\s|$)"
 strip_ansi = true
 strip_lines_matching = [
-  "^Refreshing state",
-  "^\\s*#.*unchanged",
-  "^\\s*$",
-  "^Acquiring state lock",
-  "^Releasing state lock",
+	"^Refreshing state",
+	"^\\s*#.*unchanged",
+	"^\\s*$",
+	"^Acquiring state lock",
+	"^Releasing state lock",
 ]
 max_lines = 80
 on_empty = "tofu plan: no changes detected"

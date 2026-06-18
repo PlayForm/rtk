@@ -1,11 +1,7 @@
 [filters.iptables]
 description = "Compact iptables output"
 match_command = "^iptables\\b"
-strip_lines_matching = [
-  "^\\s*$",
-  "^Chain DOCKER",
-  "^Chain BR-",
-]
+strip_lines_matching = ["^\\s*$", "^Chain DOCKER", "^Chain BR-"]
 max_lines = 50
 truncate_lines_at = 120
 

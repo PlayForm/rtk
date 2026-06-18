@@ -2,11 +2,7 @@
 description = "Compact yadm (git wrapper) output — same filtering as git"
 match_command = "^yadm\\b"
 strip_ansi = true
-strip_lines_matching = [
-  "^\\s*$",
-  "^\\s*\\(use \"git ",
-  "^\\s*\\(use \"yadm ",
-]
+strip_lines_matching = ["^\\s*$", "^\\s*\\(use \"git ", "^\\s*\\(use \"yadm "]
 truncate_lines_at = 120
 max_lines = 40
 

@@ -3,12 +3,12 @@ description = "Compact skopeo output — truncate large manifests, strip verbosi
 match_command = "^skopeo\\b"
 strip_ansi = true
 strip_lines_matching = [
-  "^\\s*$",
-  "^Getting image source signatures",
-  "^Copying blob",
-  "^Copying config",
-  "^Writing manifest",
-  "^Storing signatures",
+	"^\\s*$",
+	"^Getting image source signatures",
+	"^Copying blob",
+	"^Copying config",
+	"^Writing manifest",
+	"^Storing signatures",
 ]
 max_lines = 30
 truncate_lines_at = 120

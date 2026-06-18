@@ -3,10 +3,10 @@ description = "Compact pre-commit output"
 match_command = "^pre-commit\\b"
 strip_ansi = true
 strip_lines_matching = [
-  "^\\[INFO\\] Installing environment",
-  "^\\[INFO\\] Once installed this environment will be reused",
-  "^\\[INFO\\] This may take a few minutes",
-  "^\\s*$",
+	"^\\[INFO\\] Installing environment",
+	"^\\[INFO\\] Once installed this environment will be reused",
+	"^\\[INFO\\] This may take a few minutes",
+	"^\\s*$",
 ]
 max_lines = 40
 

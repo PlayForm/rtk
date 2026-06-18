@@ -3,14 +3,14 @@ description = "Compact composer install/update/require output — strip download
 match_command = "^composer\\s+(install|update|require)\\b"
 strip_ansi = true
 strip_lines_matching = [
-  "^\\s*$",
-  "^  - Downloading ",
-  "^  - Installing ",
-  "^Loading composer",
-  "^Updating dependencies",
+	"^\\s*$",
+	"^  - Downloading ",
+	"^  - Installing ",
+	"^Loading composer",
+	"^Updating dependencies",
 ]
 match_output = [
-  { pattern = "Nothing to install, update or remove", message = "ok (up to date)" },
+	{ pattern = "Nothing to install, update or remove", message = "ok (up to date)" },
 ]
 max_lines = 30
 

@@ -2,13 +2,9 @@
 description = "Compact rsync output — short-circuit on success, strip progress"
 match_command = "^rsync\\b"
 strip_ansi = true
-strip_lines_matching = [
-  "^\\s*$",
-  "^sending incremental file list",
-  "^sent \\d",
-]
+strip_lines_matching = ["^\\s*$", "^sending incremental file list", "^sent \\d"]
 match_output = [
-  { pattern = "total size is", message = "ok (synced)", unless = "error|failed|No such file" },
+	{ pattern = "total size is", message = "ok (synced)", unless = "error|failed|No such file" },
 ]
 max_lines = 20
 

@@ -3,9 +3,9 @@ description = "Compact go-task output — strip task headers, keep command resul
 match_command = "^task\\b"
 strip_ansi = true
 strip_lines_matching = [
-  "^\\s*$",
-  "^task: \\[.*\\] ",
-  "^task: Task .* is up to date",
+	"^\\s*$",
+	"^task: \\[.*\\] ",
+	"^task: Task .* is up to date",
 ]
 truncate_lines_at = 150
 max_lines = 50

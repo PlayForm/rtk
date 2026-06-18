@@ -1,12 +1,12 @@
 [INFO] Scanning for projects...
-[INFO] 
+[INFO]
 [INFO] -----------------< com.example.rtk:multifail-skeleton >-----------------
 [INFO] Building multifail-skeleton 1.0.0-SNAPSHOT
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
-[INFO] 
+[INFO]
 [INFO] --- surefire:3.5.5:test (default-test) @ multifail-skeleton ---
-[INFO] 
+[INFO]
 [INFO] -------------------------------------------------------
 [INFO]  T E S T S
 [INFO] -------------------------------------------------------
@@ -40,17 +40,17 @@ java.lang.IllegalStateException: boom: errors-only class for fixture capture
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
 
-[INFO] 
+[INFO]
 [INFO] Results:
-[INFO] 
-[ERROR] Failures: 
+[INFO]
+[ERROR] Failures:
 [ERROR]   CalcTest.failOne:12 failOne: addition should equal five ==> expected: <5> but was: <4>
-[ERROR] Errors: 
+[ERROR] Errors:
 [ERROR]   BoomTest.boom:8 IllegalState boom: errors-only class for fixture capture
 [ERROR]   CalcTest.failTwo:17 IllegalState failTwo: induced error for fixture capture
-[INFO] 
+[INFO]
 [ERROR] Tests run: 4, Failures: 1, Errors: 2, Skipped: 0
-[INFO] 
+[INFO]
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
@@ -58,13 +58,13 @@ java.lang.IllegalStateException: boom: errors-only class for fixture capture
 [INFO] Finished at: 2026-06-06T10:53:18-03:00
 [INFO] ------------------------------------------------------------------------
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.5:test (default-test) on project multifail-skeleton: There are test failures.
-[ERROR] 
+[ERROR]
 [ERROR] See /home/vcyber/projetos/rtk/tests/fixtures/multifail-skeleton/target/surefire-reports for the individual test results.
 [ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
 [ERROR] -> [Help 1]
-[ERROR] 
+[ERROR]
 [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
 [ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR] 
+[ERROR]
 [ERROR] For more information about the errors and possible solutions, please read the following articles:
 [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

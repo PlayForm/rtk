@@ -2,10 +2,7 @@
 description = "Compact helm output"
 match_command = "^helm\\b"
 strip_ansi = true
-strip_lines_matching = [
-  "^\\s*$",
-  "^W\\d{4}",
-]
+strip_lines_matching = ["^\\s*$", "^W\\d{4}"]
 truncate_lines_at = 120
 
 [[tests.helm]]

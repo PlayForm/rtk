@@ -2,11 +2,7 @@
 description = "Compact ty type checker output — strip blank lines, keep errors"
 match_command = "^ty\\b"
 strip_ansi = true
-strip_lines_matching = [
-  "^\\s*$",
-  "^Checking \\d+ file",
-  "^ty \\d+\\.\\d+",
-]
+strip_lines_matching = ["^\\s*$", "^Checking \\d+ file", "^ty \\d+\\.\\d+"]
 max_lines = 50
 on_empty = "ty: ok"
 

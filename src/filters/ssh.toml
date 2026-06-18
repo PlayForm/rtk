@@ -3,13 +3,13 @@ description = "Compact ssh output — strip connection banners, keep command out
 match_command = "^ssh\\b"
 strip_ansi = true
 strip_lines_matching = [
-  "^\\s*$",
-  "^Warning: Permanently added",
-  "^Connection to .+ closed",
-  "^Authenticated to",
-  "^debug1:",
-  "^OpenSSH_",
-  "^Pseudo-terminal",
+	"^\\s*$",
+	"^Warning: Permanently added",
+	"^Connection to .+ closed",
+	"^Authenticated to",
+	"^debug1:",
+	"^OpenSSH_",
+	"^Pseudo-terminal",
 ]
 max_lines = 200
 truncate_lines_at = 120
