@@ -89,7 +89,7 @@ hyperfine 'rtk git status' --warmup 3
 
 # Output:
 Time (mean ± σ):       6.2 ms ±   0.3 ms    [User: 4.1 ms, System: 1.8 ms]
-Range (min … max):     5.8 ms …   7.1 ms    100 runs
+Range (min ... max):     5.8 ms ...   7.1 ms    100 runs
 ```
 
 **Verification**:

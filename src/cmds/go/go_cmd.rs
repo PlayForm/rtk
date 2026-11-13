@@ -564,7 +564,7 @@ fn filter_go_build_with_exit(output: &str, exit_code: i32) -> String {
 	}
 
 	if errors.len() > MAX_GO_BUILD_ERRORS {
-		result.push_str(&format!("\n… +{} more errors\n", errors.len() - MAX_GO_BUILD_ERRORS));
+		result.push_str(&format!("\n... +{} more errors\n", errors.len() - MAX_GO_BUILD_ERRORS));
 		let all_errors = errors.join("\n");
 		if let Some(hint) = crate::core::tee::force_tee_tail_hint(&all_errors, "go-build", MAX_GO_BUILD_ERRORS + 1) {
 			result.push_str(&format!("  {}\n", hint));
@@ -596,7 +596,7 @@ fn format_go_build_failure(output: &str, exit_code: i32) -> String {
 	}
 
 	if lines.len() > MAX_GO_BUILD_ERRORS {
-		result.push_str(&format!("\n… +{} more output lines\n", lines.len() - MAX_GO_BUILD_ERRORS));
+		result.push_str(&format!("\n... +{} more output lines\n", lines.len() - MAX_GO_BUILD_ERRORS));
 	}
 
 	result.trim().to_string()
@@ -682,7 +682,7 @@ fn filter_go_vet(output: &str) -> String {
 	}
 
 	if issues.len() > MAX_GO_VET_ISSUES {
-		result.push_str(&format!("\n… +{} more issues\n", issues.len() - MAX_GO_VET_ISSUES));
+		result.push_str(&format!("\n... +{} more issues\n", issues.len() - MAX_GO_VET_ISSUES));
 		let all_issues = issues.join("\n");
 		if let Some(hint) = crate::core::tee::force_tee_tail_hint(&all_issues, "go-vet", MAX_GO_VET_ISSUES + 1) {
 			result.push_str(&format!("  {}\n", hint));

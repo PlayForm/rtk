@@ -254,7 +254,7 @@ Modules that parse structured output (JSON, NDJSON, state machines) must call `t
 
 ### Internal Truncation Recovery
 
-When a filter caps a list at N items (e.g. `take(20)`), the remaining items must be accessible via a tee hint. **Never show `"… +N more"` without a recovery path** — the agent has no way to retrieve the hidden content.
+When a filter caps a list at N items (e.g. `take(20)`), the remaining items must be accessible via a tee hint. **Never show `"... +N more"` without a recovery path** — the agent has no way to retrieve the hidden content.
 
 **Choosing the right hint:**
 

@@ -193,7 +193,7 @@ pub fn filter_ruff_check_json(output: &str) -> String {
 		result.push_str(line);
 	}
 	if violation_lines.len() > MAX_VIOLATIONS {
-		result.push_str(&format!("  … +{} more\n", violation_lines.len() - MAX_VIOLATIONS));
+		result.push_str(&format!("  ... +{} more\n", violation_lines.len() - MAX_VIOLATIONS));
 		let full: String = violation_lines.concat();
 		if let Some(hint) = crate::core::tee::force_tee_tail_hint(&full, "ruff-check", MAX_VIOLATIONS + 1) {
 			result.push_str(&format!("  {}\n", hint));
@@ -398,7 +398,7 @@ Would reformat: tests/test_utils.py
 		let in_section = result.split("Violations:").nth(1).unwrap_or("");
 		let listed = in_section.lines().filter(|l| l.trim().starts_with("src/")).count();
 		assert!(listed <= 50, "violations cap not enforced: got {listed}");
-		assert!(result.contains("… +150 more"), "missing '+N more' indicator");
+		assert!(result.contains("... +150 more"), "missing '+N more' indicator");
 
 		let raw_tokens = json.split_whitespace().count();
 		let out_tokens = result.split_whitespace().count();

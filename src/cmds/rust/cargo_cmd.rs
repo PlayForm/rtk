@@ -478,7 +478,7 @@ fn filter_cargo_install(output: &str) -> String {
 		}
 
 		if errors.len() > MAX_INSTALL_ERRORS {
-			result.push_str(&format!("\n… +{} more issues\n", errors.len() - MAX_INSTALL_ERRORS));
+			result.push_str(&format!("\n... +{} more issues\n", errors.len() - MAX_INSTALL_ERRORS));
 			let all_errors = errors.join("\n\n");
 			if let Some(hint) = crate::core::tee::force_tee_hint(&all_errors, "cargo-build-errors") {
 				result.push_str(&format!("  {}\n", hint));
@@ -753,7 +753,7 @@ fn filter_cargo_build(output: &str) -> String {
 		}
 	}
 	if blocks.len() > MAX_CHECK_BLOCKS {
-		result.push_str(&format!("\n… +{} more issues\n", blocks.len() - MAX_CHECK_BLOCKS));
+		result.push_str(&format!("\n... +{} more issues\n", blocks.len() - MAX_CHECK_BLOCKS));
 		let all_blocks: String = blocks.iter().map(|b| b.join("\n")).collect::<Vec<_>>().join("\n\n");
 		if let Some(hint) = crate::core::tee::force_tee_hint(&all_blocks, "cargo-check-issues") {
 			result.push_str(&format!("  {}\n", hint));
@@ -951,7 +951,7 @@ pub(crate) fn filter_cargo_test(output: &str) -> String {
 			result.push_str(&format!("{}. {}\n", i + 1, truncate(failure, 200)));
 		}
 		if failures.len() > MAX_FAILURES {
-			result.push_str(&format!("\n… +{} more failures\n", failures.len() - MAX_FAILURES));
+			result.push_str(&format!("\n... +{} more failures\n", failures.len() - MAX_FAILURES));
 			let all_failures = failures.join("\n\n");
 			if let Some(hint) = crate::core::tee::force_tee_hint(&all_failures, "cargo-test-failures") {
 				result.push_str(&format!("  {}\n", hint));
@@ -1102,7 +1102,7 @@ fn filter_cargo_clippy(output: &str) -> String {
 			result.push('\n');
 		}
 		if error_blocks.len() > MAX_CLIPPY_ERRORS {
-			result.push_str(&format!("  … +{} more errors\n", error_blocks.len() - MAX_CLIPPY_ERRORS));
+			result.push_str(&format!("  ... +{} more errors\n", error_blocks.len() - MAX_CLIPPY_ERRORS));
 			let all_blocks: String = error_blocks.iter().map(|b| b.join("\n")).collect::<Vec<_>>().join("\n\n");
 			if let Some(hint) = crate::core::tee::force_tee_hint(&all_blocks, "cargo-clippy-errors") {
 				result.push_str(&format!("  {}\n", hint));
@@ -1121,12 +1121,12 @@ fn filter_cargo_clippy(output: &str) -> String {
 			result.push_str(&format!("    {}\n", loc));
 		}
 		if locations.len() > 3 {
-			result.push_str(&format!("    … +{} more\n", locations.len() - 3));
+			result.push_str(&format!("    ... +{} more\n", locations.len() - 3));
 		}
 	}
 
 	if by_rule.len() > MAX_RULES {
-		result.push_str(&format!("\n… +{} more rules\n", by_rule.len() - MAX_RULES));
+		result.push_str(&format!("\n... +{} more rules\n", by_rule.len() - MAX_RULES));
 		let all_rules = rule_counts
 			.iter()
 			.map(|(rule, locs)| format!("{} ({}x)", rule, locs.len()))

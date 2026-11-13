@@ -282,7 +282,7 @@ fn format_dependency_listing(state: &DependencyState, cap: bool) -> String {
 			lines.push(format!("  {} {}", dep.name, dep.current_version));
 		}
 		if cap && prod.len() > MAX_LISTING {
-			lines.push(format!("  … +{} more", prod.len() - MAX_LISTING));
+			lines.push(format!("  ... +{} more", prod.len() - MAX_LISTING));
 			let all_prod = prod
 				.iter()
 				.map(|dep| format!("  {} {}", dep.name, dep.current_version))
@@ -301,7 +301,7 @@ fn format_dependency_listing(state: &DependencyState, cap: bool) -> String {
 			lines.push(format!("  {} {}", dep.name, dep.current_version));
 		}
 		if cap && dev.len() > MAX_LISTING {
-			lines.push(format!("  … +{} more", dev.len() - MAX_LISTING));
+			lines.push(format!("  ... +{} more", dev.len() - MAX_LISTING));
 			let all_dev = dev
 				.iter()
 				.map(|dep| format!("  {} {}", dep.name, dep.current_version))
@@ -597,7 +597,7 @@ mod tests {
 		let out = format_dependency_listing(&state, true);
 		let prod_count = 60usize;
 		assert!(
-			out.contains(&format!("… +{} more", prod_count - MAX_LISTING)),
+			out.contains(&format!("... +{} more", prod_count - MAX_LISTING)),
 			"truncation count missing: got\n{out}"
 		);
 	}
@@ -607,7 +607,7 @@ mod tests {
 		let prod: Vec<&str> = (0..60).map(|_| "pkg").collect();
 		let state = make_state(&prod, &[]);
 		let out = format_dependency_listing(&state, false);
-		assert!(!out.contains("… +"), "should not truncate when cap=false");
+		assert!(!out.contains("... +"), "should not truncate when cap=false");
 		assert!(!out.contains("[dev]"), "no dev section for prod-only state");
 	}
 
@@ -616,7 +616,7 @@ mod tests {
 		let dev: Vec<&str> = (0..60).map(|_| "pkg").collect();
 		let state = make_state(&[], &dev);
 		let out = format_dependency_listing(&state, false);
-		assert!(!out.contains("… +"), "should not truncate when cap=false");
+		assert!(!out.contains("... +"), "should not truncate when cap=false");
 		assert!(!out.contains("[prod]"), "no prod section for dev-only state");
 	}
 

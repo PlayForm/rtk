@@ -34,7 +34,7 @@ enum HookFormat {
 	VsCode { command: String },
 	/// GitHub Copilot CLI: camelCase `toolName` + `toolArgs` (JSON string), supports `modifiedArgs` for transparent rewrite.
 	/// Carries the full parsed `toolArgs` object so we can rewrite `command` while preserving
-	/// host-supplied metadata (description, initial_wait, mode, …) the tool requires.
+	/// host-supplied metadata (description, initial_wait, mode, ...) the tool requires.
 	CopilotCli { command: String, args: Value },
 	/// Non-bash tool, already uses rtk, or unknown format — pass through silently.
 	PassThrough,

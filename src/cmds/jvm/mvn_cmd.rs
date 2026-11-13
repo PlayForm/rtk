@@ -86,7 +86,7 @@ pub enum MvnPhase {
 	Passthrough, // clean, site, plugin goals, version/help, empty
 }
 
-/// Scan args left-to-right, skip flags + `-D…` system props, pick the LAST
+/// Scan args left-to-right, skip flags + `-D...` system props, pick the LAST
 /// remaining token. If empty, plugin-form (`:`), or `clean`/`site` → Passthrough.
 pub fn detect_phase(args: &[String]) -> MvnPhase {
 	let last = args
@@ -129,7 +129,7 @@ fn is_framework_frame(trimmed: &str) -> bool {
 /// Boilerplate `[ERROR]` lines Maven emits after `Failed to execute goal` —
 /// pure noise pointing at log files and help URLs, no signal for the user/LLM.
 /// Deliberately excludes `[ERROR] After correcting the problems` and
-/// `[ERROR]   mvn <args> -rf :…` (the resume hint is actionable signal for a
+/// `[ERROR]   mvn <args> -rf :...` (the resume hint is actionable signal for a
 /// multi-module build) and `[ERROR] Failed to execute goal` (signal).
 const BOILER_PREFIXES: &[&str] = &[
 	"[ERROR] See ",
@@ -151,7 +151,7 @@ fn is_boilerplate(line: &str) -> bool {
 /// `in_block == false` (CLOSE only occurs while a block is open). A
 /// CLOSE-shaped line outside a block would match too — acceptable: the
 /// disarm-on-take guard limits the effect to one stray line.
-/// Note: the `[ERROR]   Class.test:25 …` failures-summary entries (3-space
+/// Note: the `[ERROR]   Class.test:25 ...` failures-summary entries (3-space
 /// indent, no `<<<` marker) do NOT match.
 fn is_per_test_subline(line: &str) -> bool {
 	line.starts_with("[ERROR] ") && (line.contains("<<< FAILURE!") || line.contains("<<< ERROR!"))
@@ -169,7 +169,7 @@ fn has_english_footer(stripped: &str) -> bool {
 // ── Outside-block keep list (shared by surefire + package) ──────────────────
 
 /// Multi-module reactor summary keeper. Reads `in_reactor_summary` and toggles
-/// it on `[INFO] Reactor Summary for …` (enter) and `BUILD SUCCESS`/`BUILD
+/// it on `[INFO] Reactor Summary for ...` (enter) and `BUILD SUCCESS`/`BUILD
 /// FAILURE` (exit). Returns `true` for every line while the flag is set so the
 /// per-module status rows (`[INFO] foo ...... SUCCESS [  1.234 s]`, plain
 /// `[INFO]` separators inside the summary, etc.) survive. Returns `false`
@@ -221,7 +221,7 @@ fn keep_outside_block(line: &str) -> bool {
 /// applied on the [`SurefireStep::Passthrough`] arm.
 ///
 /// Inner machine responsibilities:
-///   - `[INFO] --- … @ … ---` plugin banner skip
+///   - `[INFO] --- ... @ ... ---` plugin banner skip
 ///   - `[INFO] Running <FQN>` opens a buffered block (flushes any prior open
 ///     block as keep — happens on truncated output)
 ///   - in-block buffering until the next CLOSE line
@@ -433,7 +433,7 @@ impl<'a> SurefireBlock<'a> {
 /// The aggregate `[ERROR] Tests run:` line is matched by `AGG` and kept; the
 /// `[ERROR]   ` entries are kept by the catch-all `[ERROR]` keeper. On builds
 /// with hundreds of failures this can be quite large. Cap entries at
-/// [`MAX_MVN_FAILING_CLASSES`] and emit `\n… +N more failures\n` immediately
+/// [`MAX_MVN_FAILING_CLASSES`] and emit `\n... +N more failures\n` immediately
 /// before the `Tests run:` aggregate when entries were dropped.
 struct FailuresSummaryCap {
 	cap: usize,
@@ -475,7 +475,7 @@ impl FailuresSummaryCap {
 		}
 	}
 
-	/// Pre-emit the `… +N more failures` tail when the aggregate
+	/// Pre-emit the `... +N more failures` tail when the aggregate
 	/// `[ERROR] Tests run:` line is about to be written, then close the
 	/// summary. Caller writes the AGG line itself afterwards.
 	fn handle_aggregate(&mut self, line: &str, out: &mut String) {
@@ -483,7 +483,7 @@ impl FailuresSummaryCap {
 			return;
 		}
 		if self.dropped > 0 {
-			out.push_str(&format!("\n… +{} more failures\n", self.dropped));
+			out.push_str(&format!("\n... +{} more failures\n", self.dropped));
 		}
 		self.in_summary = false;
 		self.emitted = 0;
@@ -495,7 +495,7 @@ impl FailuresSummaryCap {
 	/// the resulting filtered output is still well-formed.
 	fn finish(&mut self, out: &mut String) {
 		if self.in_summary && self.dropped > 0 {
-			out.push_str(&format!("\n… +{} more failures\n", self.dropped));
+			out.push_str(&format!("\n... +{} more failures\n", self.dropped));
 		}
 	}
 }
@@ -582,7 +582,7 @@ fn filter_surefire_with_cap(raw: &str, cap: usize) -> String {
 	block.finish(&mut out);
 	summary.finish(&mut out);
 	if dropped_failing > 0 {
-		out.push_str(&format!("\n… +{} more failing test classes\n", dropped_failing));
+		out.push_str(&format!("\n... +{} more failing test classes\n", dropped_failing));
 	}
 	out
 }
@@ -591,7 +591,7 @@ fn filter_surefire_with_cap(raw: &str, cap: usize) -> String {
 
 /// Buffered single-pass filter for `mvn compile` / `test-compile`.
 ///
-/// Keeps module banners, `[INFO] Building …`, `[INFO] BUILD …`, totals, finish
+/// Keeps module banners, `[INFO] Building ...`, `[INFO] BUILD ...`, totals, finish
 /// time, scanning line, install lines, and `[ERROR]` blocks with indented
 /// continuation (`  symbol:`, `  ^`, `  required:`). Deduplicates `[WARNING]`
 /// lines by normalised message (strip file coordinates).
@@ -662,7 +662,7 @@ pub fn filter_compile(raw: &str) -> String {
 /// Buffered single-pass filter for `mvn package`/`install`/`verify`/`deploy`.
 ///
 /// Mode toggle: starts in `Compile` mode, switches to `Surefire` when a
-/// `[INFO] Running …` line is seen, switches back on `Tests run:` close.
+/// `[INFO] Running ...` line is seen, switches back on `Tests run:` close.
 /// Outside any Surefire block, applies the unified keep-list (compile keepers
 /// + install/artifact lines).
 pub fn filter_package(raw: &str) -> String {
@@ -742,7 +742,7 @@ fn filter_package_with_cap(raw: &str, cap: usize) -> String {
 	block.finish(&mut out);
 	summary.finish(&mut out);
 	if dropped_failing > 0 {
-		out.push_str(&format!("\n… +{} more failing test classes\n", dropped_failing));
+		out.push_str(&format!("\n... +{} more failing test classes\n", dropped_failing));
 	}
 	out
 }
@@ -757,12 +757,12 @@ fn filter_package_with_cap(raw: &str, cap: usize) -> String {
 /// can't fire. This filter handles the residual `-q` output shape:
 ///
 /// - Green run: input is empty → output is empty (0 → 0, no overhead).
-/// - Failure run: keeps the Surefire close-line (`[ERROR] Tests run: …
+/// - Failure run: keeps the Surefire close-line (`[ERROR] Tests run: ...
 ///   <<< FAILURE! -- in FQN`), the per-test failure subline, exception class,
 ///   user-code stack frames, the failure summary block (`[ERROR] Failures:`,
-///   indented entries, aggregate `Tests run: N, Failures: F, …`), and the
+///   indented entries, aggregate `Tests run: N, Failures: F, ...`), and the
 ///   `[ERROR] Failed to execute goal` terminator. Drops framework stack
-///   frames and the post-failure boilerplate block (`See …`, `[Help 1]`,
+///   frames and the post-failure boilerplate block (`See ...`, `[Help 1]`,
 ///   `Re-run Maven`, `To see the full stack trace`, etc.).
 pub fn filter_quiet(raw: &str) -> String {
 	let stripped = strip_ansi(raw);
@@ -782,7 +782,7 @@ pub fn filter_quiet(raw: &str) -> String {
 			continue;
 		}
 
-		// Per-test failure subline: `[ERROR] FQN.method -- Time elapsed: … <<< FAILURE!`
+		// Per-test failure subline: `[ERROR] FQN.method -- Time elapsed: ... <<< FAILURE!`
 		// (or `<<< ERROR!` for thrown exceptions).
 		if is_per_test_subline(line) {
 			out.push_str(line);
@@ -1217,7 +1217,7 @@ mod tests {
 			o
 		);
 		assert!(
-			o.contains("… +1 more failing test classes"),
+			o.contains("... +1 more failing test classes"),
 			"tail counts one class, not one per failure; got:\n{}",
 			o
 		);
@@ -1320,7 +1320,7 @@ mod tests {
 	}
 
 	/// Non-quiet runs must strip the post-failure help boilerplate
-	/// (`-> [Help 1]`, `Re-run Maven`, `See …`, bare `[ERROR]` dividers) the
+	/// (`-> [Help 1]`, `Re-run Maven`, `See ...`, bare `[ERROR]` dividers) the
 	/// same way `filter_quiet` does, while keeping the `Failed to execute
 	/// goal` terminator (signal).
 	#[test]
@@ -1482,7 +1482,7 @@ mod tests {
 
 	/// Synthetic fixture with 5 failing classes; with `cap = 3` we expect
 	/// the first 3 failing blocks emitted in full and a
-	/// `… +2 more failing test classes` tail.
+	/// `... +2 more failing test classes` tail.
 	#[test]
 	fn surefire_caps_failing_blocks_emits_tail() {
 		let mut i = String::from(
@@ -1529,7 +1529,7 @@ mod tests {
 				n = n
 			);
 		}
-		assert!(o.contains("… +2 more failing test classes"), "tail emitted; got:\n{}", o);
+		assert!(o.contains("... +2 more failing test classes"), "tail emitted; got:\n{}", o);
 	}
 
 	/// Cap of 0 means summary-only (core cap policy): no failing-class blocks
@@ -1566,7 +1566,7 @@ mod tests {
 	}
 
 	/// `[ERROR] Failures:` summary block cap: with N>cap entries, expect the
-	/// first `cap` entries plus a `\n… +(N-cap) more failures\n` tail
+	/// first `cap` entries plus a `\n... +(N-cap) more failures\n` tail
 	/// emitted before the aggregate `[ERROR] Tests run:` line.
 	#[test]
 	fn failures_summary_block_is_capped() {
@@ -1606,7 +1606,7 @@ mod tests {
 		}
 		// Tail emitted before aggregate.
 		let tail_idx = o
-			.find("… +2 more failures")
+			.find("... +2 more failures")
 			.unwrap_or_else(|| panic!("tail must appear; got:\n{}", o));
 		let agg_idx = o
 			.find("[ERROR] Tests run: 100")
@@ -1649,7 +1649,7 @@ mod tests {
 
 	/// `mvn install` on a multi-module reactor build where one module fails
 	/// must preserve the Reactor Summary with the `FAILURE` row plus the
-	/// `[ERROR] Failed to execute goal …` terminator that already survives
+	/// `[ERROR] Failed to execute goal ...` terminator that already survives
 	/// via `keep_outside_block`.
 	#[test]
 	fn reactor_summary_kept_on_multi_module_fail() {

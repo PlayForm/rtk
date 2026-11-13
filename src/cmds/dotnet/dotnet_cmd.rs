@@ -355,7 +355,7 @@ fn format_dotnet_format_output(summary: &dotnet_format_report::FormatSummary, ch
 	}
 
 	if changed_count > MAX_FORMAT_FILES {
-		output.push_str(&format!("\n… +{} more files", changed_count - MAX_FORMAT_FILES));
+		output.push_str(&format!("\n... +{} more files", changed_count - MAX_FORMAT_FILES));
 		let all_files = summary
 			.files_with_changes
 			.iter()
@@ -951,7 +951,7 @@ fn format_build_output(summary: &binlog::BuildSummary, _binlog_path: &Path) -> S
 			errors.push_str(&format!("{}\n", format_issue(issue, "error")));
 		}
 		if summary.errors.len() > MAX_BUILD_ERRORS {
-			errors.push_str(&format!("  … +{} more errors\n", summary.errors.len() - MAX_BUILD_ERRORS));
+			errors.push_str(&format!("  ... +{} more errors\n", summary.errors.len() - MAX_BUILD_ERRORS));
 			let all_errors = summary
 				.errors
 				.iter()
@@ -973,7 +973,7 @@ fn format_build_output(summary: &binlog::BuildSummary, _binlog_path: &Path) -> S
 			warnings.push_str(&format!("{}\n", format_issue(issue, "warning")));
 		}
 		if summary.warnings.len() > MAX_BUILD_WARNINGS {
-			warnings.push_str(&format!("  … +{} more warnings\n", summary.warnings.len() - MAX_BUILD_WARNINGS));
+			warnings.push_str(&format!("  ... +{} more warnings\n", summary.warnings.len() - MAX_BUILD_WARNINGS));
 			let all_warnings = summary
 				.warnings
 				.iter()
@@ -1065,7 +1065,7 @@ fn format_test_output(
 		}
 		if summary.failed_tests.len() > MAX_DOTNET_FAILURES {
 			failed_tests_section.push_str(&format!(
-				"… +{} more failed tests\n",
+				"... +{} more failed tests\n",
 				summary.failed_tests.len() - MAX_DOTNET_FAILURES
 			));
 			let all_failed = summary
@@ -1097,7 +1097,7 @@ fn format_test_output(
 			errors_section.push_str(&format!("{}\n", format_issue(issue, "error")));
 		}
 		if errors.len() > MAX_TEST_ERRORS {
-			errors_section.push_str(&format!("  … +{} more errors\n", errors.len() - MAX_TEST_ERRORS));
+			errors_section.push_str(&format!("  ... +{} more errors\n", errors.len() - MAX_TEST_ERRORS));
 			let all_errors = errors.iter().map(|e| format_issue(e, "error")).collect::<Vec<_>>().join("\n");
 			if let Some(hint) =
 				crate::core::tee::force_tee_tail_hint(&all_errors, "dotnet-test-errors", MAX_TEST_ERRORS + 1)
@@ -1114,7 +1114,7 @@ fn format_test_output(
 			warnings_section.push_str(&format!("{}\n", format_issue(issue, "warning")));
 		}
 		if warnings.len() > MAX_TEST_WARNINGS {
-			warnings_section.push_str(&format!("  … +{} more warnings\n", warnings.len() - MAX_TEST_WARNINGS));
+			warnings_section.push_str(&format!("  ... +{} more warnings\n", warnings.len() - MAX_TEST_WARNINGS));
 			let all_warnings = warnings
 				.iter()
 				.map(|w| format_issue(w, "warning"))
@@ -1161,7 +1161,7 @@ fn format_restore_output(
 			errors_section.push_str(&format!("{}\n", format_issue(issue, "error")));
 		}
 		if errors.len() > MAX_FORMAT_ERRORS {
-			errors_section.push_str(&format!("  … +{} more errors\n", errors.len() - MAX_FORMAT_ERRORS));
+			errors_section.push_str(&format!("  ... +{} more errors\n", errors.len() - MAX_FORMAT_ERRORS));
 			let all_errors = errors.iter().map(|e| format_issue(e, "error")).collect::<Vec<_>>().join("\n");
 			if let Some(hint) =
 				crate::core::tee::force_tee_tail_hint(&all_errors, "dotnet-format-errors", MAX_FORMAT_ERRORS + 1)
@@ -1178,7 +1178,7 @@ fn format_restore_output(
 			warnings_section.push_str(&format!("{}\n", format_issue(issue, "warning")));
 		}
 		if warnings.len() > MAX_FORMAT_WARNINGS {
-			warnings_section.push_str(&format!("  … +{} more warnings\n", warnings.len() - MAX_FORMAT_WARNINGS));
+			warnings_section.push_str(&format!("  ... +{} more warnings\n", warnings.len() - MAX_FORMAT_WARNINGS));
 			let all_warnings = warnings
 				.iter()
 				.map(|w| format_issue(w, "warning"))

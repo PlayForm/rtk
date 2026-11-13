@@ -96,7 +96,7 @@ fn docker_ps(_verbose: u8) -> Result<i32> {
 		rtk.push_str(entry);
 	}
 	if lines.len() > MAX_CONTAINERS {
-		rtk.push_str(&format!("  … +{} more\n", lines.len() - MAX_CONTAINERS));
+		rtk.push_str(&format!("  ... +{} more\n", lines.len() - MAX_CONTAINERS));
 		let full: String = lines.concat();
 		if let Some(hint) = crate::core::tee::force_tee_hint(&full, "docker-ps") {
 			rtk.push_str(&format!("{}\n", hint));
@@ -153,7 +153,7 @@ fn docker_ps_all(_verbose: u8) -> Result<i32> {
 		rtk.push_str(l);
 	}
 	if running_lines.len() > MAX_CONTAINERS {
-		rtk.push_str(&format!("  … +{} more\n", running_lines.len() - MAX_CONTAINERS));
+		rtk.push_str(&format!("  ... +{} more\n", running_lines.len() - MAX_CONTAINERS));
 	}
 	if !stopped_lines.is_empty() {
 		rtk.push_str(&format!("[docker] {} stopped/exited:\n", stopped_lines.len()));
@@ -161,7 +161,7 @@ fn docker_ps_all(_verbose: u8) -> Result<i32> {
 			rtk.push_str(l);
 		}
 		if stopped_lines.len() > MAX_CONTAINERS {
-			rtk.push_str(&format!("  … +{} more\n", stopped_lines.len() - MAX_CONTAINERS));
+			rtk.push_str(&format!("  ... +{} more\n", stopped_lines.len() - MAX_CONTAINERS));
 		}
 	}
 	if truncated {
@@ -270,7 +270,7 @@ fn docker_images(_verbose: u8) -> Result<i32> {
 		rtk.push_str(l);
 	}
 	if image_lines.len() > MAX_IMAGES {
-		rtk.push_str(&format!("  … +{} more\n", image_lines.len() - MAX_IMAGES));
+		rtk.push_str(&format!("  ... +{} more\n", image_lines.len() - MAX_IMAGES));
 		if let Some(hint) = crate::core::tee::force_tee_tail_hint(&full_rtk, "docker-images", MAX_IMAGES + 2) {
 			rtk.push_str(&format!("{}\n", hint));
 		}
@@ -375,7 +375,7 @@ fn format_kubectl_pods(json: &Value) -> String {
 			out.push_str(&format!("  {}\n", issue));
 		}
 		if issues.len() > MAX_PODS_ISSUES {
-			out.push_str(&format!("  … +{} more", issues.len() - MAX_PODS_ISSUES));
+			out.push_str(&format!("  ... +{} more", issues.len() - MAX_PODS_ISSUES));
 			let all_issues = issues.join("\n");
 			if let Some(hint) = crate::core::tee::force_tee_tail_hint(&all_issues, "kubectl-pods", MAX_PODS_ISSUES + 1)
 			{
@@ -435,7 +435,7 @@ fn format_kubectl_services(json: &Value) -> String {
 		out.push_str(&format!("{}\n", line));
 	}
 	if all_lines.len() > MAX_KUBECTL_SERVICES {
-		out.push_str(&format!("  … +{} more", all_lines.len() - MAX_KUBECTL_SERVICES));
+		out.push_str(&format!("  ... +{} more", all_lines.len() - MAX_KUBECTL_SERVICES));
 		let all_text = all_lines.join("\n");
 		if let Some(hint) =
 			crate::core::tee::force_tee_tail_hint(&all_text, "kubectl-services", MAX_KUBECTL_SERVICES + 1)
@@ -511,7 +511,7 @@ pub fn format_compose_ps(raw: &str) -> String {
 		result.push('\n');
 	}
 	if all_formatted.len() > MAX_COMPOSE_SERVICES {
-		result.push_str(&format!("  … +{} more\n", all_formatted.len() - MAX_COMPOSE_SERVICES));
+		result.push_str(&format!("  ... +{} more\n", all_formatted.len() - MAX_COMPOSE_SERVICES));
 		let all_text = all_formatted.join("\n");
 		if let Some(hint) = crate::core::tee::force_tee_tail_hint(&all_text, "compose-ps", MAX_COMPOSE_SERVICES + 1) {
 			result.push_str(&format!("  {}\n", hint));
@@ -601,7 +601,7 @@ fn compact_ports(ports: &str) -> String {
 	if port_nums.len() <= 3 {
 		port_nums.join(", ")
 	} else {
-		format!("{}, … +{}", port_nums[..2].join(", "), port_nums.len() - 2)
+		format!("{}, ... +{}", port_nums[..2].join(", "), port_nums.len() - 2)
 	}
 }
 
@@ -869,7 +869,7 @@ api-1  | Connected to database";
 	fn test_compact_ports_many() {
 		let result =
 			compact_ports("0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp, 0.0.0.0:8080->8080/tcp, 0.0.0.0:9090->9090/tcp");
-		assert!(result.contains("…"), "should truncate for >3 ports");
+		assert!(result.contains("..."), "should truncate for >3 ports");
 	}
 
 	#[test]

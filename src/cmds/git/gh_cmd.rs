@@ -244,7 +244,7 @@ fn format_pr_list(json: &Value, ultra_compact: bool) -> String {
 		out.push_str(&format!("{}\n", line));
 	}
 	if all_lines.len() > MAX_LIST {
-		out.push_str(&format!("  … +{} more\n", all_lines.len() - MAX_LIST));
+		out.push_str(&format!("  ... +{} more\n", all_lines.len() - MAX_LIST));
 		let all_text = all_lines.join("\n");
 		if let Some(hint) = crate::core::tee::force_tee_tail_hint(&all_text, "gh-prs", MAX_LIST + 1) {
 			out.push_str(&format!("  {}\n", hint));
@@ -577,7 +577,7 @@ fn format_issue_list(json: &Value, ultra_compact: bool) -> String {
 		out.push_str(&format!("{}\n", line));
 	}
 	if all_lines.len() > MAX_LIST {
-		out.push_str(&format!("  … +{} more\n", all_lines.len() - MAX_LIST));
+		out.push_str(&format!("  ... +{} more\n", all_lines.len() - MAX_LIST));
 		let all_text = all_lines.join("\n");
 		if let Some(hint) = crate::core::tee::force_tee_tail_hint(&all_text, "gh-issues", MAX_LIST + 1) {
 			out.push_str(&format!("  {}\n", hint));

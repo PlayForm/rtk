@@ -290,7 +290,7 @@ fn filter_eslint_json(output: &str) -> String {
 	}
 
 	if by_file.len() > MAX_FILES {
-		result.push_str(&format!("\n… +{} more files\n", by_file.len() - MAX_FILES));
+		result.push_str(&format!("\n... +{} more files\n", by_file.len() - MAX_FILES));
 		let all_file_lines = by_file
 			.iter()
 			.map(|(r, count)| format!("{} ({} issues)", compact_path(&r.file_path), count))
@@ -407,7 +407,7 @@ fn filter_pylint_json(output: &str) -> String {
 	}
 
 	if file_counts.len() > MAX_FILES {
-		result.push_str(&format!("\n… +{} more files\n", file_counts.len() - MAX_FILES));
+		result.push_str(&format!("\n... +{} more files\n", file_counts.len() - MAX_FILES));
 		let all_file_lines = file_counts
 			.iter()
 			.map(|(file, count)| format!("{} ({} issues)", compact_path(file), count))
@@ -452,7 +452,7 @@ fn filter_generic_lint(output: &str) -> String {
 	}
 
 	if issues.len() > MAX_ISSUES {
-		result.push_str(&format!("\n… +{} more issues\n", issues.len() - MAX_ISSUES));
+		result.push_str(&format!("\n... +{} more issues\n", issues.len() - MAX_ISSUES));
 		let all_issues = issues.join("\n");
 		if let Some(hint) = crate::core::tee::force_tee_tail_hint(&all_issues, "lint-issues", MAX_ISSUES + 1) {
 			result.push_str(&format!("  {}\n", hint));

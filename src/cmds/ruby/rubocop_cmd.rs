@@ -160,12 +160,12 @@ fn filter_rubocop_json(output: &str) -> String {
 			));
 		}
 		if sorted_offenses.len() > max_offenses_per_file {
-			result.push_str(&format!("  … +{} more\n", sorted_offenses.len() - max_offenses_per_file));
+			result.push_str(&format!("  ... +{} more\n", sorted_offenses.len() - max_offenses_per_file));
 		}
 	}
 
 	if files_with_offenses.len() > max_files {
-		result.push_str(&format!("\n… +{} more files\n", files_with_offenses.len() - max_files));
+		result.push_str(&format!("\n... +{} more files\n", files_with_offenses.len() - max_files));
 		let all_files = files_with_offenses
 			.iter()
 			.map(|f| compact_ruby_path(&f.path))
@@ -484,7 +484,7 @@ mod tests {
 		let result = filter_rubocop_json(json);
 		assert!(result.contains(":5 Cop/E"), "should show 5th offense");
 		assert!(!result.contains(":6 Cop/F"), "should not show 6th inline");
-		assert!(result.contains("… +2 more"), "should show overflow");
+		assert!(result.contains("... +2 more"), "should show overflow");
 	}
 
 	#[test]
@@ -565,7 +565,7 @@ mod tests {
 		);
 		let result = filter_rubocop_json(&json);
 		assert!(
-			result.contains("… +2 more files"),
+			result.contains("... +2 more files"),
 			"should show +2 more files overflow: {}",
 			result
 		);

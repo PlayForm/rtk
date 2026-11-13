@@ -302,7 +302,7 @@ fn format_mr_list(json: &Value, ultra_compact: bool) -> String {
 		filtered.push_str(&format!("{}\n", line));
 	}
 	if all_lines.len() > MAX_LIST {
-		filtered.push_str(&format!("  … +{} more\n", all_lines.len() - MAX_LIST));
+		filtered.push_str(&format!("  ... +{} more\n", all_lines.len() - MAX_LIST));
 		let all_text = all_lines.join("\n");
 		if let Some(hint) = crate::core::tee::force_tee_tail_hint(&all_text, "glab-mrs", MAX_LIST + 1) {
 			filtered.push_str(&format!("  {}\n", hint));
@@ -535,7 +535,7 @@ fn format_issue_list(json: &Value, ultra_compact: bool) -> String {
 		filtered.push_str(&format!("{}\n", line));
 	}
 	if all_lines.len() > MAX_LIST {
-		filtered.push_str(&format!("  … +{} more\n", all_lines.len() - MAX_LIST));
+		filtered.push_str(&format!("  ... +{} more\n", all_lines.len() - MAX_LIST));
 		let all_text = all_lines.join("\n");
 		if let Some(hint) = crate::core::tee::force_tee_tail_hint(&all_text, "glab-issues", MAX_LIST + 1) {
 			filtered.push_str(&format!("  {}\n", hint));
@@ -656,7 +656,7 @@ fn format_ci_list(json: &Value, ultra_compact: bool) -> String {
 		filtered.push_str(&format!("{}\n", line));
 	}
 	if all_lines.len() > MAX_CI_LIST {
-		filtered.push_str(&format!("  … +{} more\n", all_lines.len() - MAX_CI_LIST));
+		filtered.push_str(&format!("  ... +{} more\n", all_lines.len() - MAX_CI_LIST));
 		let all_text = all_lines.join("\n");
 		if let Some(hint) = crate::core::tee::force_tee_tail_hint(&all_text, "glab-pipelines", MAX_CI_LIST + 1) {
 			filtered.push_str(&format!("  {}\n", hint));
